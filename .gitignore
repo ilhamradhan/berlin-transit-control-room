@@ -1,0 +1,45 @@
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+
+# Airflow runtime
+airflow/logs/
+airflow/airflow.cfg
+airflow/standalone_admin_password.txt
+
+# dbt generated artifacts
+dbt_packages/
+target/
+logs/
+
+# Collected and generated data
+data/
+warehouse/releases/
+warehouse/current.json
+state/*.sqlite*
+*.duckdb
+*.duckdb.*
+*.parquet
+*.pb
+*.pbf
+*.zip
+
+# RAG models and indexes
+models/embeddings/
+rag/index/
+
+# Local tooling
+.DS_Store
+.vscode/
+.idea/

@@ -1,0 +1,94 @@
+# Architecture
+
+**Status:** accepted target architecture; implementation is pending.
+
+## System flow
+
+```text
+VBB static GTFS (daily change check) ───────────────┐
+                                                    ├─ Airflow ingestion and validation
+VBB GTFS-Realtime (every 15 minutes) ──────────────┘
+                         │
+             raw protobuf, 48-hour retention
+                         │
+              parse, filter, validate, compact
+                         │
+            date-partitioned Parquet observations
+                         │
+                 dbt CLI executed by Airflow
+                         │
+              candidate DuckDB release + tests
+                         │ success only
+                 atomic current.json publication
+                         │
+          Streamlit reads current verified release
+```
+
+A separate SQLite control-plane database stores incidents, acknowledgements, allowlisted recovery attempts, outcomes, and recovery verification.
+
+## Analytical data model boundaries
+
+The historical observation layer stores only fields required by the product, including collection time, trip/route/stop identifiers, scheduled and predicted event times, delay, schedule relationship, and static-feed version. Descriptive GTFS data is normalized rather than copied into every observation.
+
+Metrics are calculated deterministically by dbt and DuckDB. The RAG assistant does not calculate or override metrics.
+
+## Versioned publication
+
+1. dbt builds a candidate DuckDB file.
+2. Tests run against the candidate.
+3. Failed candidates never replace the current healthy release.
+4. A successful build atomically updates a small manifest.
+5. Streamlit opens the manifest’s verified release read-only.
+6. Only the current and previous verified release are retained.
+
+This avoids unsafe concurrent writes and provides simple rollback and publication-age measurement.
+
+## Application pages
+
+- **Control Room:** overall state, source freshness, collection coverage, Airflow/dbt outcomes, quality tests, schedule match rate, mart age, incidents, and latest verified recovery.
+- **Incident Detail:** diagnostic evidence, cited guidance, recovery control, and verification state.
+- **Transit Reliability:** median and P90 predicted delay, on-time observation rate (≤5 minutes late), severe-delay rate (>15 minutes late), source-provided cancellation rate, realtime coverage, matching rate, and route/mode/time breakdowns.
+- **System Documentation:** architecture, source contracts, metric definitions, limitations, and runbooks.
+
+Reliability filters include date range, transport mode, route, stop, weekday, and hour range.
+
+## Controlled failures
+
+Demo mode isolates synthetic fixtures and incidents from real collection:
+
+1. Stale or unavailable realtime source
+2. Static/realtime schedule mismatch
+3. dbt quality-test failure blocking publication
+
+Only corresponding allowlisted actions are executable. The assistant cannot trigger them.
+
+## RAG boundary
+
+```text
+Approved Markdown and generated metadata
+             │ sanitize before indexing/context assembly
+             ▼
+Compact local embeddings + LanceDB
+             │ retrieve top supporting passages
+             ├── sanitized structured incident context
+             ▼
+Gemini 2.5 Flash-Lite
+             │
+Cited read-only explanation or explicit insufficiency
+```
+
+Allowed context: sanitized project documentation, dbt/Airflow metadata, and redacted error summaries.
+
+Forbidden context: secrets, environment variables, connection strings, unfiltered logs, unrestricted filesystem contents, or arbitrary commands.
+
+## Storage lifecycle
+
+- Raw realtime: 48 hours after successful parse/validation
+- Static GTFS: active and previous validated version
+- Parquet observations: bounded campaign history
+- DuckDB: current and previous verified release
+- Collected-data hard cap: 4 GB
+- RAG total target: below 1 GB
+- Campaign hard stop: 28 calendar days or 4 GB, whichever comes first
+
+Cloud object storage, Supabase, MotherDuck, and BigQuery are outside version one. Cloud storage may be reconsidered only after measured local growth justifies it.
