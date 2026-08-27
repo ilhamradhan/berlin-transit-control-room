@@ -1,4 +1,4 @@
-# Evaluation Plan
+# Evaluation plan
 
 ## Principle
 
@@ -8,11 +8,12 @@ Acceptance requires real, recorded evidence. A generated answer, successful writ
 
 - Expected schedule: 96 slots per full day at 15-minute cadence.
 - Minimum usable campaign: at least 14 elapsed days and at least 90% successful collection slots.
-- 75–89.9% is visibly labeled low coverage.
-- Below 75% fails collection acceptance.
+- Any result below 90% fails campaign acceptance.
+- A 75–89.9% result may still be displayed as an incomplete dataset with a low-coverage warning.
+- Below 75% is too incomplete for the reliability explorer.
 - Campaign stops after 28 calendar days or 4 GB, whichever comes first.
 - Idempotency tests prove reruns do not duplicate observations.
-- Cleanup tests prove validated raw payloads expire after 48 hours.
+- Cleanup tests prove raw and quarantined payloads expire after 48 hours.
 - Daily compaction produces queryable Parquet and bounded file counts.
 
 Entity-level realtime coverage within successful snapshots is evaluated separately from collection-slot coverage.
@@ -28,7 +29,7 @@ Entity-level realtime coverage within successful snapshots is evaluated separate
 
 ## Controlled incidents
 
-For each scenario—stale source, schedule mismatch, dbt quality failure—verify:
+For each scenario (stale source, schedule mismatch, and dbt quality failure), verify:
 
 1. Safe synthetic trigger
 2. Visible health degradation

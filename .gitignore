@@ -16,6 +16,8 @@ __pycache__/
 # Airflow runtime
 airflow/logs/
 airflow/airflow.cfg
+airflow/airflow.db
+airflow/*.sqlite*
 airflow/standalone_admin_password.txt
 
 # dbt generated artifacts

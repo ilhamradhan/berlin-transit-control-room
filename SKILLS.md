@@ -1,50 +1,42 @@
-# Skill Usage
+# Skill ledger
 
-## Status definitions
+A skill is **used** only when its workflow changes an artifact or action. Reading a skill to understand it is not enough.
 
-- **Used:** the skill workflow materially guided a project artifact or action.
-- **Selected for later:** accepted as a likely phase tool but not yet used to produce that phase’s artifact.
-- **Candidate:** may fit, but requires confirmation at the relevant phase.
-- **Inspected only:** loaded to understand its behavior; not credited as producing project work.
+## Used
 
-## Used so far
+| Skill | Where it helped |
+|---|---|
+| `grill-me` | Ran the requirements interview that produced the accepted decisions. The skill delegates internally to the `grilling` workflow. |
+| `github-repo-management` | Guided public repository creation and remote verification. |
+| `humanizer` | Guided the anti-slop documentation pass after the initial baseline. |
+| `agent-harness-project-delivery` | Checked the repository's skill accounting, stage records, status labels, and publication evidence. |
+| `caveman-commit` | Produced the concise Conventional Commit message for the documentation correction. |
 
-| Skill | Status | Contribution |
+There is no installed `/unslop` skill. `humanizer` is the matching installed workflow.
+
+`requesting-code-review` was inspected but not used because its own workflow says to skip documentation-only changes.
+
+## Likely later
+
+| When it fits | Skill | Expected output |
 |---|---|---|
-| `grill-me` → `grilling` | Used | Drove the requirements interview and decision tree summarized in the foundational documents. |
-| `github-repo-management` | Used | Guided authenticated creation and verification of the public GitHub repository. |
+| Domain terms are still unclear | `domain-modeling` | Glossary and invariants |
+| A stage is ready to break into tasks | `plan` | Executable stage plan |
+| New code behavior starts | `test-driven-development` | Failing test, minimal fix, passing test |
+| A failure has no known cause | `systematic-debugging` | Reproduction and root-cause record |
+| A stage appears complete | `requesting-code-review` | Independent gate review |
+| The app can be used in a browser | `dogfood` | Exploratory QA report |
+| The case study needs its system diagram | `architecture-diagram` | Dark HTML/SVG diagram |
+| Hermes configuration itself changes | `hermes-agent` | Verified Hermes procedure |
 
-The initial requirements process used only `grill-me`/`grilling` as its project-design skill. Tool-based research and system measurements are evidence, not skills.
+These entries are candidates or selected future tools, not work already completed.
 
-## Selected phase map
+## Excluded
 
-| Trigger or phase | Suggested skill | Current status | Intended result |
-|---|---|---|---|
-| Requirements remain ambiguous | `grill-me` / `grilling` | Used | Resolved decision record |
-| Domain terms or boundaries need sharpening | `domain-modeling` | Candidate | Domain glossary and invariants |
-| A stage needs an actionable implementation plan | `plan` | Selected for later | Plan artifact before execution |
-| New production behavior is implemented | `test-driven-development` | Selected for later | Red–green–refactor evidence |
-| A failure has an unknown cause | `systematic-debugging` | Selected for later | Root-cause record before correction |
-| A stage appears complete | `requesting-code-review` | Selected for later | Independent stage-gate review |
-| Runnable user journeys need exploratory QA | `dogfood` | Selected for later | Browser evidence and issue report |
-| Portfolio architecture needs a dark diagram | `architecture-diagram` | Selected for later | Standalone dark HTML/SVG diagram |
-| Hermes configuration itself is changed | `hermes-agent` | Candidate | Current documented Hermes procedure |
+- `streamlit-analytics-dashboard-redesign` is not part of this project.
+- Excalidraw was considered, but the selected diagram format is the dark HTML/SVG `architecture-diagram` workflow.
+- Autonomous multi-agent implementation is not part of the current plan.
 
-## Explicit exclusions and corrections
+## What to record after using a skill
 
-- `streamlit-analytics-dashboard-redesign` is **not** part of this project’s skill chain.
-- `excalidraw` is not the required architecture format; the selected output is the dark HTML/SVG `architecture-diagram` workflow.
-- Loading a skill for inspection does not make it “used.”
-- Autonomous multi-agent implementation is not part of the accepted baseline.
-
-## Per-stage recording template
-
-For every skill actually used, record:
-
-- Exact skill name
-- Why it fit the phase
-- Inputs supplied
-- Outputs produced
-- Verification performed
-- Required or optional status
-- Deviations from its standard workflow
+Record the exact name, why it fit, the input, the artifact or action it affected, the check performed, and any deviation from the skill's normal workflow.

@@ -1,10 +1,10 @@
-# TransitOps Berlin Implementation Plan
+# TransitOps Berlin implementation plan
 
 **Goal:** Build a verified Berlin transit data reliability platform while preserving reproducible evidence of harnessing an AI agent.
 
 **Approach:** Deliver six runnable stage increments. Every stage begins with a self-contained execution prompt and ends only after acceptance evidence and review. Implementation details and exact versions are refined at the start of the relevant stage rather than guessed in advance.
 
-## Stage 1 — Harness and source validation
+## Stage 1: Harness and source validation
 
 **Deliverables**
 
@@ -27,7 +27,7 @@
 
 **Suggested skills:** `domain-modeling` if terminology remains ambiguous; `plan` for the executable Stage 1 task plan; `systematic-debugging` only if the spike fails unexpectedly; `architecture-diagram` for the accepted dark diagram.
 
-## Stage 2 — Ingestion and storage
+## Stage 2: Ingestion and storage
 
 **Deliverables**
 
@@ -43,12 +43,12 @@
 
 - Synthetic tests pass before live collection.
 - Duplicate/idempotent runs do not duplicate observations.
-- Raw cleanup preserves required incident evidence.
+- Raw and quarantined payloads expire after 48 hours; only sanitized test fixtures persist.
 - Projected collection remains below the 4 GB cap or collection pauses safely.
 
 **Suggested skills:** `test-driven-development`; `systematic-debugging` only for unexplained failures; `requesting-code-review` at the gate.
 
-## Stage 3 — Transformation and quality
+## Stage 3: Transformation and quality
 
 **Deliverables**
 
@@ -66,7 +66,7 @@
 - Streamlit can read the current release while a candidate builds.
 - Current and previous releases are retained; older releases are removed.
 
-## Stage 4 — Control Room
+## Stage 4: Control Room
 
 **Deliverables**
 
@@ -85,7 +85,7 @@
 
 **Suggested skills:** `test-driven-development`, `requesting-code-review`, then `dogfood` once runnable.
 
-## Stage 5 — RAG operations assistant
+## Stage 5: RAG operations assistant
 
 **Deliverables**
 
@@ -105,7 +105,7 @@
 - Excluded operational information is not exposed.
 - Installed model, corpus, and index stay below 1 GB.
 
-## Stage 6 — Portfolio presentation
+## Stage 6: Portfolio presentation
 
 **Deliverables**
 

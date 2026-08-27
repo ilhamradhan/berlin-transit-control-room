@@ -1,4 +1,4 @@
-# Decision Record
+# Decision record
 
 This file summarizes accepted decisions from the requirements grill. Detailed implementation decisions will be appended as dated records.
 
@@ -6,14 +6,14 @@ This file summarizes accepted decisions from the requirements grill. Detailed im
 |---|---|---|
 | D-001 | Build a new project, TransitOps Berlin | Provides a greenfield orchestration and reliability exercise rather than repeating an existing Steam analytics project. |
 | D-002 | Treat harness engineering as both agent and delivery harnesses | Demonstrates controlled agent work and a reproducible runtime system. |
-| D-003 | Make the Pipeline Control Room the differentiator | Transit analytics proves utility; operational diagnosis and recovery create the stronger portfolio story. |
+| D-003 | Make the Pipeline Control Room the core product | Transit analytics shows that the data is useful; diagnosis and recovery are the main learning workflow. |
 | D-004 | Use VBB static GTFS plus collected GTFS-Realtime | Static supplies schedule context; repeated current feeds create observation history. |
 | D-005 | Scope modes to U-Bahn, S-Bahn, and tram | Keeps the first data model and dashboard focused. |
 | D-006 | Collect every 15 minutes | Reduces snapshots by two-thirds versus five-minute collection while retaining route-level analytical value. |
-| D-007 | Stop after 28 calendar days or 4 GB | Prevents indefinite runtime and storage growth. |
+| D-007 | Stop after 28 calendar days or 4 GB of collection files | The cap covers raw, quarantine, static, and Parquet files and prevents indefinite growth. |
 | D-008 | Require 14 days and 90% slot coverage | Provides a meaningful bounded campaign with an explicit quality gate. |
-| D-009 | Retain raw realtime for 48 hours | Supports recent debugging without preserving all raw payloads. |
-| D-010 | Check static GTFS daily and store only changes | Handles schedule revisions without repeated duplicate ZIPs. |
+| D-009 | Retain raw and quarantined payloads for 48 hours | Supports recent debugging without preserving raw source files indefinitely. |
+| D-010 | Check static GTFS daily and retain referenced versions | Historical observations remain reproducible without storing unchanged duplicate downloads. |
 | D-011 | Use local Parquet and DuckDB first | Preserves the learning stack and avoids premature cloud complexity. |
 | D-012 | Defer R2, MotherDuck, Supabase, and BigQuery | Reconsider only after a measured storage or publication need. |
 | D-013 | Use a lightweight Airflow spike | The 3.6 GiB host is below official Docker guidance; fit must be proven. |

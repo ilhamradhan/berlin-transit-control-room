@@ -1,4 +1,4 @@
-# Runbook Index
+# Runbook index
 
 **Status:** index only. Individual runbooks will be implemented and tested with their corresponding failure scenario.
 

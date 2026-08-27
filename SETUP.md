@@ -1,4 +1,4 @@
-# Setup Baseline
+# Setup baseline
 
 **Status:** design baseline; commands and exact image versions will be finalized and verified in Stage 1.
 
@@ -14,7 +14,7 @@
 
 At inspection, existing containers used approximately 597 MiB combined, the Docker daemon approximately 145 MiB, and Hermes server/gateway processes approximately 760 MiB. These values are transient measurements, not permanent requirements.
 
-The official Airflow Docker documentation recommends at least 4 GB available to Docker and ideally 8 GB. The host is below that recommendation. TransitOps Berlin therefore starts with a measured lightweight spike rather than the full example Compose topology.
+The [official Airflow Docker guide](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/) recommends at least 4 GB available to Docker and ideally 8 GB for its example stack. The host is below that recommendation. TransitOps Berlin therefore starts with a measured lightweight spike rather than copying the example Compose topology.
 
 ## Stage 1 setup goals
 
@@ -44,10 +44,10 @@ It refuses unsafe startup with actionable instructions. It never stops unrelated
 ```text
 data/
 ├── raw/realtime/          # 48-hour retention; ignored by Git
-├── quarantine/            # bounded incident artifacts; ignored by Git
+├── quarantine/            # invalid raw payloads; same 48-hour limit
 ├── parquet/observations/  # date-partitioned history; ignored by Git
-├── static/active/         # active validated GTFS; ignored by Git
-└── static/previous/       # previous validated GTFS; ignored by Git
+├── static/active/         # extracted active GTFS; ignored by Git
+└── static/archive/        # compressed versions referenced by retained observations
 warehouse/
 ├── releases/              # current + previous DuckDB; ignored by Git
 └── current.json           # runtime publication manifest; generated

@@ -1,70 +1,52 @@
-# Harness Engineering
+# Harness
 
-## Purpose
+This project documents two kinds of control:
 
-The harness makes agent-assisted development reproducible and reviewable. It has two connected parts:
+- The **agent harness** defines the prompt, context, constraints, skill choice, phase gates, and evidence expected from Hermes.
+- The **delivery harness** defines the environment, tests, orchestration, retention, deployment, and recovery rules for the data system.
 
-- **Agent harness:** prompts, context, phase skills, constraints, tool boundaries, acceptance criteria, and verification evidence.
-- **Delivery harness:** reproducible setup, orchestration, tests, observability, retention, deployment controls, and recovery procedures.
+I own the product choices and acceptance criteria. Agent output counts only after a check shows that it works.
 
-The agent may assist with research, planning, implementation, documentation, and verification. The user owns product and architecture decisions. A phase completes only when its acceptance criteria are supported by real evidence.
+## Delivery stages
 
-## Phase-gated lifecycle
-
-| Gate | Required output | Evidence required |
+| Stage | Output | Proof needed to pass |
 |---|---|---|
-| 1. Setup and source validation | Resource-safe skeleton, source samples, contracts, architecture | Commands and measured results |
-| 2. Ingestion and storage | Scheduled collection, retention, Parquet compaction | Tests, sample DAG run, storage projection |
-| 3. Transformation and quality | dbt layers, metrics, versioned DuckDB publication | dbt artifacts, tests, release verification |
-| 4. Control Room | Health views, incidents, three deterministic recoveries | Browser checks and incident audit records |
-| 5. RAG assistant | Sanitized corpus, retrieval, cited read-only answers | Formal retrieval and answer evaluation |
-| 6. Portfolio presentation | Reliability explorer, diagram, case study, demo | Browser QA and published/recorded artifacts |
+| 1. Setup and source validation | Resource-safe skeleton, source samples, contracts, architecture | Measured resource use, valid samples, successful test DAG |
+| 2. Ingestion and storage | Scheduled collection, retention, Parquet compaction | Tests, successful DAG run, storage projection |
+| 3. Transformation and quality | dbt models, tests, versioned DuckDB publication | dbt artifacts and publication checks |
+| 4. Control Room | Health views, incidents, three recoveries | Browser checks and incident audit records |
+| 5. RAG assistant | Sanitized corpus and cited answers | Retrieval, citation, refusal, and leakage tests |
+| 6. Portfolio presentation | Reliability explorer, diagram, case study, demo | Browser QA and published artifacts |
 
-A runnable verified increment is required before advancing.
+Writing files does not pass a stage. The checks in [`EVALUATION.md`](EVALUATION.md) do.
 
-## Stage record contract
+## Stage records
 
-Each `docs/harness/stages/*.md` record contains:
+Each file in `docs/harness/stages/` records:
 
-1. User intent
-2. Rephrased execution prompt
-3. Assumptions and constraints
-4. Skills actually used and why
-5. Acceptance criteria
-6. Execution summary
-7. Verification evidence with real results
-8. Deviations
-9. Lessons learned
+1. my request;
+2. the self-contained prompt Hermes used;
+3. assumptions and constraints;
+4. skills that materially guided the work;
+5. acceptance criteria;
+6. a short execution summary;
+7. commands and relevant output;
+8. deviations and lessons.
 
-Skills discussed or loaded for inspection are not described as having produced an artifact. Planned skills remain clearly labeled until used.
+Raw transcripts, chain-of-thought, secrets, and unfiltered logs do not belong in the repository.
 
-## Agent boundaries
+## Working rules
 
-- Do not expose or commit secrets.
-- Do not send secrets, environment variables, connection strings, or unfiltered logs to Gemini.
-- Do not allow the LLM to execute commands or alter pipeline state.
-- Do not accept shell commands from dashboard users or the LLM.
-- Do not stop or modify unrelated VPS services.
-- Do not publish real collected datasets in Git.
-- Do not advance a phase based solely on plausible-looking code.
+- Mark unbuilt features as planned.
+- Use the smallest skill set that fits the current stage.
+- Do not call a skill "used" merely because it was inspected.
+- Test new behavior before accepting it.
+- Test DuckDB candidates before changing the current-release manifest.
+- Read back remote writes before reporting success.
+- Do not send secrets, connection strings, environment variables, or raw logs to Gemini.
+- Do not let the LLM run commands or change pipeline state.
+- Do not stop unrelated VPS services.
 
-## Verification discipline
+## Choosing skills
 
-- Reproduce a bug before fixing it when practical.
-- Use failing tests before new production behavior when appropriate.
-- Test candidate DuckDB releases before publication.
-- Read back external writes before claiming success.
-- Record actual commands and concise relevant output, never fabricated output.
-- Mark design-only artifacts as planned rather than implemented.
-
-## Skill selection rule
-
-Use the smallest phase-specific skill set. Before each phase:
-
-1. Identify the phase goal and uncertainty.
-2. Suggest the matching installed skill briefly.
-3. Load the skill only when its workflow will be used.
-4. Record it as “used” only when it materially guided an artifact or action.
-5. Record deviations and verification.
-
-See [`SKILLS.md`](SKILLS.md).
+Before a stage, identify the actual uncertainty and suggest one matching skill. Load it only when its workflow will guide the work, then record what it produced and how that output was checked. [`SKILLS.md`](SKILLS.md) tracks the current choices.

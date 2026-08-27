@@ -1,106 +1,73 @@
 # TransitOps Berlin
 
-> A harness-engineered data reliability platform for sampled Berlin public-transport predictions.
+> A learning project about data engineering and working effectively with an AI coding agent.
 
-**Status:** requirements baseline complete; implementation has not started.
+**Current state:** the design is documented, but the pipeline and app do not exist yet.
 
-TransitOps Berlin is a learning and portfolio project demonstrating my ability to harness an AI agent to design, build, verify, and document a data-engineering system. It combines a Berlin transit reliability explorer with a pipeline Control Room for detecting, diagnosing, recovering from, and verifying data failures.
+I am building TransitOps Berlin to learn two things together:
 
-## What this project demonstrates
+1. how to build a small data platform with Airflow, dbt, DuckDB, Parquet, and Streamlit;
+2. how to direct an AI agent with clear constraints, phase gates, selected skills, and checks that prove the work is correct.
 
-### Data engineering
+The dataset comes from VBB, Berlin-Brandenburg's public transport authority. The planned pipeline samples static GTFS and GTFS-Realtime data for Berlin U-Bahn, S-Bahn, and tram services. The app will show both transit reliability and the health of the pipeline that produced those numbers.
 
-- VBB static GTFS and GTFS-Realtime ingestion
-- Fifteen-minute bounded collection orchestrated by Apache Airflow
-- Temporary raw protobuf retention and compacted Parquet history
-- dbt transformations and tests executed against DuckDB
-- Versioned, test-gated DuckDB releases
-- Pipeline freshness, coverage, quality, and publication monitoring
-- Controlled failure simulation and deterministic recovery
+## What I plan to build
 
-### Harness engineering
+The app has four pages:
 
-- Requirements grilling before implementation
-- Explicit constraints and decisions
-- User intent preserved alongside a reusable rephrased prompt
-- Phase gates with observable acceptance criteria
-- Skills selected for specific phases rather than loaded indiscriminately
-- Curated execution and verification records
-- Human ownership of product and architecture decisions
-- AI-assisted research, implementation, documentation, and verification
+- **Control Room:** source freshness, collection coverage, Airflow and dbt runs, test results, incidents, and the age of the current data release.
+- **Incident Detail:** evidence for a failure, the relevant runbook, one safe recovery control, and a separate verification step.
+- **Transit Reliability:** predicted-delay and coverage metrics by route, mode, stop, and time.
+- **System Documentation:** architecture, source contracts, metric definitions, limitations, and runbooks.
 
-## Product journey
+A small RAG assistant will answer operational questions from approved project documentation. It will cite its sources and stay read-only. Recovery actions remain ordinary application controls, not LLM tool calls.
 
-> **Detect → diagnose → retrieve grounded guidance → recover → verify**
+## Data collection limits
 
-The primary product persona is a data engineer operating the Berlin transit pipeline. The real portfolio audience is hiring managers and technical reviewers.
-
-## Planned application
-
-1. **Control Room** — freshness, collection coverage, Airflow/dbt runs, tests, mart age, incidents, and recovery history.
-2. **Incident Detail** — evidence, citations, allowlisted recovery controls, and deterministic verification.
-3. **Transit Reliability** — sampled predicted-delay metrics by route, mode, stop, and time.
-4. **System Documentation** — architecture, source contracts, metrics, limitations, and runbooks.
-
-The embedded RAG assistant is read-only. It explains approved project evidence with citations; it cannot execute commands or change pipeline state.
-
-## Core stack
-
-| Layer | Planned technology |
+| Setting | Decision |
 |---|---|
-| Orchestration | Apache Airflow |
-| Transformation | dbt Core with explicit CLI tasks |
-| Analytical storage | Parquet and versioned DuckDB releases |
-| Control-plane state | SQLite in WAL mode |
-| Application | Streamlit |
-| Retrieval | LanceDB with a compact local embedding model |
-| Answer generation | Gemini 2.5 Flash-Lite with sanitized context |
-| Runtime | Lightweight Docker deployment on a resource-constrained VPS |
+| Realtime interval | 15 minutes |
+| Minimum useful run | 14 elapsed days with at least 90% successful collection slots |
+| Hard stop | 28 calendar days or 4 GB of collected data, whichever comes first |
+| Raw payload retention | 48 hours, including invalid or quarantined payloads |
+| Static GTFS | Check daily; keep each compressed version referenced by retained observations |
+| Initial storage | Local Parquet and DuckDB |
 
-## Collection methodology
+The 4 GB limit covers raw, quarantined, static, and Parquet collection files. A useful sanitized failure sample can move into the small test fixtures; the original payload still expires.
 
-- Modes: Berlin U-Bahn, S-Bahn, and tram
-- Realtime cadence: every 15 minutes
-- Minimum campaign: 14 elapsed days with at least 90% successful collection slots
-- Hard stop: 28 calendar days or 4 GB of collected project data, whichever occurs first
-- Raw realtime retention: 48 hours after successful parsing and validation
-- Static GTFS: checked daily; only changed, validated versions are stored
-- Weather enrichment: out of version-one scope
+These are samples of realtime predictions, not measured passenger arrival times. Low-coverage periods will be marked, and the analysis will not claim that one factor caused a delay.
 
-The resulting metrics describe **observed realtime predictions**, not verified passenger arrival measurements. The project will not make causal claims.
+## Planned stack
 
-## Harness records
+| Job | Tool |
+|---|---|
+| Scheduling | Apache Airflow |
+| SQL models and tests | dbt Core |
+| Files and analytics | Parquet and DuckDB |
+| Incident state | SQLite |
+| App | Streamlit |
+| Retrieval | LanceDB with local embeddings |
+| Answer generation | Gemini 2.5 Flash-Lite |
 
-Curated stage records live in [`docs/harness/stages/`](docs/harness/stages/). Each record preserves:
+## How the agent work is documented
 
-- User intent
-- Rephrased execution prompt
-- Assumptions and constraints
-- Skills actually used
-- Acceptance criteria
-- Execution summary
-- Verification evidence
-- Deviations and lessons
+I make the product and architecture decisions. Hermes Agent helps with research, planning, implementation, documentation, and verification. The repository keeps a short record for each stage: my intent, the agent's rephrased prompt, skills actually used, acceptance criteria, commands run, results, and deviations.
 
-Raw chat transcripts, secrets, and unfiltered logs are not published.
+This is curated evidence, not a raw chat export. See [`HARNESS.md`](HARNESS.md), [`PROMPT.md`](PROMPT.md), and [`SKILLS.md`](SKILLS.md).
 
 ## Documentation
 
-| Document | Purpose |
-|---|---|
-| [`HARNESS.md`](HARNESS.md) | Phase-gated agent and delivery harness |
-| [`PROMPT.md`](PROMPT.md) | Original intent and reusable rephrased prompt |
-| [`SKILLS.md`](SKILLS.md) | Actual and planned skill usage by phase |
-| [`SETUP.md`](SETUP.md) | Environment constraints and planned setup |
-| [`ARCHITECTURE.md`](ARCHITECTURE.md) | Components, data flow, storage lifecycle, and safety boundaries |
-| [`PLAN.md`](PLAN.md) | Six-stage implementation plan and gates |
-| [`DEPLOY.md`](DEPLOY.md) | Planned local/VPS and portfolio deployment |
-| [`EVALUATION.md`](EVALUATION.md) | Pipeline, failure, dashboard, and RAG acceptance checks |
-| [`DECISIONS.md`](DECISIONS.md) | Accepted decisions and tradeoffs |
-| [`RUNBOOKS.md`](RUNBOOKS.md) | Planned operational runbook index |
+- [`ARCHITECTURE.md`](ARCHITECTURE.md): system boundaries and data flow
+- [`PLAN.md`](PLAN.md): six implementation stages
+- [`SETUP.md`](SETUP.md): VPS constraints and the first Airflow spike
+- [`EVALUATION.md`](EVALUATION.md): acceptance tests
+- [`DECISIONS.md`](DECISIONS.md): accepted tradeoffs
+- [`DEPLOY.md`](DEPLOY.md): private runtime and public case-study plan
+- [`RUNBOOKS.md`](RUNBOOKS.md): planned incident procedures
+- [`docs/harness/stages/`](docs/harness/stages/): curated stage records
 
-## Publication policy
+## License and data attribution
 
-The repository is public under the MIT license. It excludes real collected transit archives, DuckDB databases, Parquet history, raw protobuf files, embedding indexes, model files, secrets, and unfiltered logs. Tiny synthetic fixtures will be added for reproducible tests.
+Project code, documentation, and synthetic fixtures use the MIT license. The repository excludes the collected transit archive, databases, model files, vector indexes, secrets, and raw logs.
 
-VBB remains the owner and provider of its source data. VBB open data must be attributed and used according to its published terms, including CC BY 4.0 where applicable. See [VBB Open Data](https://www.vbb.de/vbb-services/api-open-data/datasets/).
+Transit data is provided by **VBB Verkehrsverbund Berlin-Brandenburg GmbH** under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Sources: [VBB datasets](https://unternehmen.vbb.de/en/digital-services/datasets/) and [VBB GTFS-Realtime](https://production.gtfsrt.vbb.de/). This project samples, filters, and transforms the source data into derived metrics. VBB does not endorse this project.

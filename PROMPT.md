@@ -1,8 +1,8 @@
-# Prompt Record
+# Prompt record
 
 ## User intent
 
-Create a learning project combining harness engineering—setup, planning, implementation, deployment, and reproducible agent use—with a data-engineering stack based on DuckDB, Airflow, and dbt. Add an AI capability that fits the product rather than adding AI for its own sake. Preserve the prompt, its rephrasing, skills used, decisions, setup, plan, deployment, and verification in separate Markdown files for future reproduction.
+Create a learning project that combines harness engineering (setup, planning, implementation, deployment, and reproducible agent use) with a data-engineering stack based on DuckDB, Airflow, and dbt. Add an AI capability only where it helps the product. Preserve the prompt, its rephrasing, skills used, decisions, setup, plan, deployment, and verification in separate Markdown files for future reference.
 
 The selected product is a Berlin transit reliability and data-pipeline Control Room using VBB data.
 
@@ -10,7 +10,7 @@ The selected product is a Berlin transit reliability and data-pipeline Control R
 
 > Build **TransitOps Berlin**, a public portfolio and learning project that demonstrates my ability to harness an AI agent to produce a verified data-engineering system.
 >
-> Use VBB static GTFS and GTFS-Realtime for Berlin U-Bahn, S-Bahn, and tram. Collect realtime snapshots every 15 minutes on an always-on but resource-constrained VPS. Require at least 14 elapsed days with 90% successful collection-slot coverage. Stop automatically after 28 calendar days or 4 GB of collected project data, whichever occurs first. Retain validated raw protobuf for 48 hours, compact the required observations into date-partitioned Parquet, and check static GTFS daily while retaining only the active and previous validated versions.
+> Use VBB static GTFS and GTFS-Realtime for Berlin U-Bahn, S-Bahn, and tram. Collect realtime snapshots every 15 minutes on an always-on but resource-constrained VPS. Require at least 14 elapsed days with 90% successful collection-slot coverage. Stop automatically after 28 calendar days or 4 GB of collection files, whichever occurs first. Count raw, quarantined, static, and Parquet files toward that limit. Expire all raw and quarantined payloads after 48 hours unless a sanitized sample is deliberately promoted into the test fixtures. Compact the required observations into date-partitioned Parquet. Check static GTFS daily and retain each compressed version referenced by retained observations.
 >
 > Orchestrate with a measured lightweight Apache Airflow topology. Airflow must run explicit dbt CLI commands. Use dbt and DuckDB for deterministic transformations, quality tests, and reliability marts. Publish marts as versioned DuckDB database files: test a candidate, atomically update a manifest only after success, and retain the current and previous verified release. Store low-volume incident and recovery state in a separate SQLite database using WAL mode.
 >

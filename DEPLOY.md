@@ -1,4 +1,4 @@
-# Deployment Strategy
+# Deployment strategy
 
 **Status:** planned; no TransitOps service has been deployed.
 

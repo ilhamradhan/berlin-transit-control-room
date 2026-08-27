@@ -83,11 +83,11 @@ Forbidden context: secrets, environment variables, connection strings, unfiltere
 
 ## Storage lifecycle
 
-- Raw realtime: 48 hours after successful parse/validation
-- Static GTFS: active and previous validated version
+- Raw and quarantined payloads: 48 hours; sanitized failures may become small test fixtures
+- Static GTFS: every compressed version referenced by retained observations
 - Parquet observations: bounded campaign history
 - DuckDB: current and previous verified release
-- Collected-data hard cap: 4 GB
+- Collection-file hard cap: 4 GB across raw, quarantine, static, and Parquet
 - RAG total target: below 1 GB
 - Campaign hard stop: 28 calendar days or 4 GB, whichever comes first
 
