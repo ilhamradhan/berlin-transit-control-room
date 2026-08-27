@@ -4,7 +4,7 @@
 
 ## Runtime target
 
-The working stack runs locally on the user’s always-on VPS using a measured lightweight Docker topology. It is not assumed to be public internet infrastructure.
+The working stack is intended to run on the user’s always-on VPS after Stage 1 identifies a Docker topology that fits. It is not intended to be public internet infrastructure.
 
 Planned components:
 
@@ -19,7 +19,7 @@ Existing unrelated containers remain outside this project’s lifecycle.
 
 ## Startup safety
 
-A preflight reports resource and port conflicts and refuses unsafe startup. It never stops other containers. Exact memory limits are set from Stage 1 measurements.
+The planned preflight will report resource and port conflicts and refuse unsafe startup. It will never stop other containers. Stage 1 measurements will set the memory limits.
 
 ## Application access
 

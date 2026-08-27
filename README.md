@@ -13,10 +13,10 @@ The dataset comes from VBB, Berlin-Brandenburg's public transport authority. The
 
 ## What I plan to build
 
-The app has four pages:
+The planned app will have four pages:
 
 - **Control Room:** source freshness, collection coverage, Airflow and dbt runs, test results, incidents, and the age of the current data release.
-- **Incident Detail:** evidence for a failure, the relevant runbook, one safe recovery control, and a separate verification step.
+- **Incident Detail:** evidence for a failure, the relevant runbook, one approved demo control, and a post-action health check.
 - **Transit Reliability:** predicted-delay and coverage metrics by route, mode, stop, and time.
 - **System Documentation:** architecture, source contracts, metric definitions, limitations, and runbooks.
 
@@ -68,6 +68,6 @@ This is curated evidence, not a raw chat export. See [`HARNESS.md`](HARNESS.md),
 
 ## License and data attribution
 
-Project code, documentation, and synthetic fixtures use the MIT license. The repository excludes the collected transit archive, databases, model files, vector indexes, secrets, and raw logs.
+Project code, documentation, and synthetic fixtures use the MIT license. VBB data is not covered by that license. The repository excludes the collected transit archive, databases, model files, vector indexes, secrets, and raw logs.
 
 Transit data is provided by **VBB Verkehrsverbund Berlin-Brandenburg GmbH** under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Sources: [VBB datasets](https://unternehmen.vbb.de/en/digital-services/datasets/) and [VBB GTFS-Realtime](https://production.gtfsrt.vbb.de/). This project samples, filters, and transforms the source data into derived metrics. VBB does not endorse this project.

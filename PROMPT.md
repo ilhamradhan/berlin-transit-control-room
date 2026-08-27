@@ -1,22 +1,24 @@
 # Prompt record
 
-## User intent
+## Summary of the user request (not verbatim)
 
 Create a learning project that combines harness engineering (setup, planning, implementation, deployment, and reproducible agent use) with a data-engineering stack based on DuckDB, Airflow, and dbt. Add an AI capability only where it helps the product. Preserve the prompt, its rephrasing, skills used, decisions, setup, plan, deployment, and verification in separate Markdown files for future reference.
 
 The selected product is a Berlin transit reliability and data-pipeline Control Room using VBB data.
 
-## Rephrased reusable execution prompt
+## Agent-rephrased implementation brief
 
-> Build **TransitOps Berlin**, a public portfolio and learning project that demonstrates my ability to harness an AI agent to produce a verified data-engineering system.
+Baseline date: 2026-08-27
+
+> Build **TransitOps Berlin** as a public learning project. The finished repository must contain a working data pipeline, tests, deployment instructions, and evidence for every completed stage.
 >
-> Use VBB static GTFS and GTFS-Realtime for Berlin U-Bahn, S-Bahn, and tram. Collect realtime snapshots every 15 minutes on an always-on but resource-constrained VPS. Require at least 14 elapsed days with 90% successful collection-slot coverage. Stop automatically after 28 calendar days or 4 GB of collection files, whichever occurs first. Count raw, quarantined, static, and Parquet files toward that limit. Expire all raw and quarantined payloads after 48 hours unless a sanitized sample is deliberately promoted into the test fixtures. Compact the required observations into date-partitioned Parquet. Check static GTFS daily and retain each compressed version referenced by retained observations.
+> Use VBB static GTFS and GTFS-Realtime for Berlin U-Bahn, S-Bahn, and tram. Collect realtime snapshots every 15 minutes on an always-on but resource-constrained VPS. Require at least 14 elapsed days with 90% successful collection-slot coverage. A slot succeeds only when the response parses as GTFS-Realtime, passes the source-contract freshness check, and commits its normalized output; unchanged payloads and entity completeness are separate metrics. Stop automatically after 28 calendar days or before a write would push collection files above 4 GB. Count raw, quarantined, static, and Parquet files toward that limit. Expire all raw and quarantined payloads after 48 hours unless a sanitized sample is deliberately promoted into the test fixtures. Compact the required observations into date-partitioned Parquet. Check static GTFS daily and retain each compressed version referenced by retained observations.
 >
-> Orchestrate with a measured lightweight Apache Airflow topology. Airflow must run explicit dbt CLI commands. Use dbt and DuckDB for deterministic transformations, quality tests, and reliability marts. Publish marts as versioned DuckDB database files: test a candidate, atomically update a manifest only after success, and retain the current and previous verified release. Store low-volume incident and recovery state in a separate SQLite database using WAL mode.
+> Record idle and active memory use for the smallest Airflow topology that can run the project safely. Airflow must run explicit dbt CLI commands. Use dbt and DuckDB for transformations, quality tests, and reliability marts. Before publication, checkpoint and close the candidate DuckDB file, reopen it independently in read-only mode, and run publication checks. Replace the manifest atomically on the same filesystem only after those checks pass. Retain the current and previous release, and do not delete a release still held by a reader. Store low-volume incident and action state in a separate SQLite database using WAL mode.
 >
-> Build a Streamlit application with Control Room, Incident Detail, Transit Reliability, and System Documentation pages. Demonstrate the journey Detect → diagnose → retrieve grounded guidance → recover → verify. Include three isolated synthetic failure scenarios: stale realtime source, static/realtime schedule mismatch, and dbt quality-test failure. Expose only three corresponding allowlisted deterministic recovery actions. Record actions and require deterministic recovery verification.
+> Build a Streamlit application with Control Room, Incident Detail, Transit Reliability, and System Documentation pages. Each synthetic failure must show its evidence, cited runbook, one approved demo control, and a post-action health check. Include three scenarios: stale realtime source, static/realtime schedule mismatch, and dbt quality-test failure. A stale-source retry remains unresolved when the upstream feed is unhealthy. A schedule mismatch remains quarantined when no matching validated static feed is available. The dbt demo control resets only the synthetic failure fixture before rebuilding. Record every action and result.
 >
-> Add a read-only RAG operations assistant. Index only an approved local documentation corpus with a compact local embedding model and LanceDB. Send Gemini 2.5 Flash-Lite only selected passages plus sanitized structured incident context. Never send secrets, environment variables, connection strings, or unfiltered logs. Require citations, admit insufficient evidence, and prohibit claims that the assistant executed recovery. Keep the RAG footprint below 1 GB and formally evaluate retrieval, citation support, refusals, and prohibited claims.
+> Add a read-only RAG operations assistant. Select the local embedding model only after measuring installed size and retrieval quality, and store the index in LanceDB. Send Gemini 2.5 Flash-Lite only selected passages plus the allowed structured incident fields defined by the sanitizer contract. Never send secrets, environment variables, connection strings, or unfiltered logs. Require citations, admit insufficient evidence, and prohibit claims that the assistant executed an action. Keep the embedding model, corpus, and index below 1 GB. Evaluate known questions, expected sources, citation support, refusals, and prohibited claims.
 >
 > Develop through six phase gates. Preserve curated stage records containing my intent, the agent’s self-contained rephrasing, assumptions, skills actually used, acceptance criteria, execution summary, real verification evidence, deviations, and lessons. Do not publish raw chat transcripts. Clearly distinguish planned behavior from verified implementation.
 >
@@ -24,4 +26,4 @@ The selected product is a Berlin transit reliability and data-pipeline Control R
 
 ## Prompt ownership and disclosure
 
-The user defines goals, constraints, and architecture decisions. Hermes Agent may rephrase instructions into self-contained execution prompts and assist with implementation and verification. Curated records expose that collaboration rather than presenting generated work as unaided.
+The brief came from an agent-assisted requirements discussion. The user accepted the scope, constraints, and architecture decisions recorded in [`DECISIONS.md`](DECISIONS.md). Implementation and verification may be agent-assisted, but completed work counts only when the repository contains supporting evidence.

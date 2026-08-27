@@ -72,6 +72,7 @@ No Airflow, dbt, DuckDB, Streamlit, or RAG code has been built or tested.
 - Kept the selected dark HTML/SVG diagram instead of Excalidraw.
 - Separated skills used from skills merely inspected or proposed.
 - Replaced the generated-sounding README with a direct first-person account of the learning project.
+- Applied the delayed independent audit: defined slot success and DST handling, bounded pre-write storage, fixed static-version retention, narrowed demo controls, and specified safe DuckDB publication checks.
 
 ## What I learned from the baseline
 

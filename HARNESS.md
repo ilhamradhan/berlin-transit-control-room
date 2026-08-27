@@ -14,7 +14,7 @@ I own the product choices and acceptance criteria. Agent output counts only afte
 | 1. Setup and source validation | Resource-safe skeleton, source samples, contracts, architecture | Measured resource use, valid samples, successful test DAG |
 | 2. Ingestion and storage | Scheduled collection, retention, Parquet compaction | Tests, successful DAG run, storage projection |
 | 3. Transformation and quality | dbt models, tests, versioned DuckDB publication | dbt artifacts and publication checks |
-| 4. Control Room | Health views, incidents, three recoveries | Browser checks and incident audit records |
+| 4. Control Room | Health views, incidents, three demo controls | Browser checks and incident audit records |
 | 5. RAG assistant | Sanitized corpus and cited answers | Retrieval, citation, refusal, and leakage tests |
 | 6. Portfolio presentation | Reliability explorer, diagram, case study, demo | Browser QA and published artifacts |
 
@@ -25,7 +25,7 @@ Writing files does not pass a stage. The checks in [`EVALUATION.md`](EVALUATION.
 Each file in `docs/harness/stages/` records:
 
 1. my request;
-2. the self-contained prompt Hermes used;
+2. the self-contained prompt Hermes used, embedded or linked at the same Git commit;
 3. assumptions and constraints;
 4. skills that materially guided the work;
 5. acceptance criteria;

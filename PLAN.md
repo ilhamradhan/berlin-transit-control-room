@@ -13,6 +13,7 @@
 - Lightweight Airflow resource spike
 - Non-destructive preflight
 - Verified static and realtime source samples
+- Captured VBB feed-status or Atom notice alongside source samples
 - Source contracts and domain glossary
 - Dark HTML/SVG architecture diagram
 - Stage record
@@ -44,7 +45,8 @@
 - Synthetic tests pass before live collection.
 - Duplicate/idempotent runs do not duplicate observations.
 - Raw and quarantined payloads expire after 48 hours; only sanitized test fixtures persist.
-- Projected collection remains below the 4 GB cap or collection pauses safely.
+- A slot succeeds only after protobuf parsing, freshness validation, and normalized-output commit; unchanged payloads and entity completeness are separate metrics.
+- Before each write, projected counted storage is checked and collection pauses instead of exceeding 4 GB.
 
 **Suggested skills:** `test-driven-development`; `systematic-debugging` only for unexplained failures; `requesting-code-review` at the gate.
 
@@ -63,8 +65,10 @@
 
 - Known fixtures produce expected metrics.
 - Failed tests block publication.
+- The writer checkpoints and closes the candidate before an independent read-only reopen check.
+- The manifest is replaced atomically on the same filesystem.
 - Streamlit can read the current release while a candidate builds.
-- Current and previous releases are retained; older releases are removed.
+- Current and previous releases are retained; cleanup waits until older releases have no active readers.
 
 ## Stage 4: Control Room
 
@@ -73,15 +77,15 @@
 - SQLite control-plane schema in WAL mode
 - Control Room and Incident Detail pages
 - Three isolated synthetic failure scenarios
-- Three allowlisted recovery actions
-- Deterministic recovery verification and audit history
+- Three approved demo reset/retry controls
+- Post-action health checks and audit history
 
 **Gate**
 
 - Each scenario is detected by the real pipeline path.
 - Healthy collected data remains unchanged.
 - No arbitrary command execution is possible.
-- Browser QA proves Detect → diagnose → recover → verify.
+- Browser QA proves that an operator can inspect evidence, open cited guidance, run the approved demo control, and see the post-action health check.
 
 **Suggested skills:** `test-driven-development`, `requesting-code-review`, then `dogfood` once runnable.
 
@@ -92,6 +96,7 @@
 - Approved corpus and sanitizer
 - Compact embedding-model spike
 - LanceDB index
+- Verified and pinned Gemini model ID at the start of Stage 5
 - Retrieval with source/section metadata
 - Gemini answer contract with citations and insufficiency behavior
 - Formal evaluation dataset

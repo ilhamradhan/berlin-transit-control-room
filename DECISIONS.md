@@ -21,10 +21,10 @@ This file summarizes accepted decisions from the requirements grill. Detailed im
 | D-015 | Execute explicit dbt CLI tasks | Transparent and smaller than Cosmos or dbt Cloud. |
 | D-016 | Publish versioned DuckDB releases | Avoids concurrent-write hazards and enables test-gated atomic publication. |
 | D-017 | Use separate SQLite control-plane state | Keeps operational writes out of Airflow metadata and read-only analytics releases. |
-| D-018 | Use three isolated synthetic failures | Demonstrates real detection/recovery paths without corrupting collected history. |
-| D-019 | Allow only three deterministic recoveries | Prevents arbitrary DAG or shell execution. |
+| D-018 | Use three isolated synthetic failures | Exercises real incident paths without corrupting collected history. |
+| D-019 | Allow only three demo reset/retry controls | Prevents arbitrary DAG or shell execution without pretending an external outage is always recoverable. |
 | D-020 | Keep the RAG assistant read-only | Natural-language interpretation is separated from authorized side effects. |
-| D-021 | Use Gemini 2.5 Flash-Lite with local retrieval | Avoids a multi-gigabyte local generation model on a CPU-only low-memory VPS. |
+| D-021 | Use Gemini 2.5 Flash-Lite with local retrieval | Avoids a multi-gigabyte local generation model on a CPU-only low-memory VPS; Stage 5 must recheck availability and pin the exact model ID. |
 | D-022 | Use LanceDB and a compact local embedding model | Provides persistent local semantic retrieval without another database service. |
 | D-023 | Require formal RAG evaluation | Citations, refusals, retrieval quality, and prohibited claims must be proven. |
 | D-024 | Exclude weather from version one | Avoids extra ingestion and causal-interpretation scope. |

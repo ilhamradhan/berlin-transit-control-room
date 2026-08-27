@@ -2,11 +2,11 @@
 
 **Status:** index only. Individual runbooks will be implemented and tested with their corresponding failure scenario.
 
-| Incident | Planned runbook | Deterministic action | Verification |
+| Incident | Planned runbook | Demo control | Post-action check |
 |---|---|---|---|
-| Stale or unavailable realtime source | `docs/runbooks/recover-stale-source.md` | Retry ingestion with validated source/fixture | Fresh validated collection slot exists |
-| Static/realtime schedule mismatch | `docs/runbooks/refresh-static-schedule.md` | Refresh/realign validated static schedule, then rematch | Match rate returns to accepted range |
-| dbt quality-test failure | `docs/runbooks/recover-failed-dbt-build.md` | Rerun corrected synthetic dbt build | Tests pass and verified candidate publishes |
+| Stale or unavailable realtime source | `docs/runbooks/recover-stale-source.md` | Retry once only when the source health check passes; otherwise escalate | Fresh validated slot exists or incident remains unresolved |
+| Static/realtime schedule mismatch | `docs/runbooks/refresh-static-schedule.md` | Fetch and validate the matching static feed if available; otherwise quarantine and escalate | Match rate recovers or the mismatch remains isolated |
+| dbt quality-test failure | `docs/runbooks/recover-failed-dbt-build.md` | Reset the synthetic failure fixture, then rebuild | Tests pass and a checked candidate publishes |
 
 ## Runbook requirements
 
@@ -17,9 +17,9 @@ Each runbook must include:
 - Evidence to inspect
 - Known safe causes
 - Preconditions
-- Exact allowlisted recovery control
+- Exact approved demo control and unresolved path
 - Expected audit event
-- Deterministic verification
+- Post-action health check
 - Escalation/insufficient-evidence behavior
 - Synthetic-demo isolation statement
 
