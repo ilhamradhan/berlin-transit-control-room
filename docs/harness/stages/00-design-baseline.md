@@ -6,7 +6,7 @@ Build a learning project that combines Airflow, dbt, DuckDB, and a useful AI fea
 
 ## Agent prompt
 
-[`PROMPT.md`](../../../PROMPT.md) contains the reusable prompt produced from the requirements interview.
+[`PROMPT.md`](../PROMPT.md) contains the reusable prompt produced from the requirements interview.
 
 ## Constraints accepted here
 
@@ -23,8 +23,8 @@ Build a learning project that combines Airflow, dbt, DuckDB, and a useful AI fea
 |---|---|
 | `grill-me` | Requirements and decisions; it delegates internally to `grilling` |
 | `github-repo-management` | Repository creation and read-back checks |
-| `humanizer` | Documentation cleanup after the first commit |
 | `agent-harness-project-delivery` | Harness-record and publication audit |
+| `architecture-diagram` | Embedded SVG and standalone HTML target-architecture diagram |
 | `caveman-commit` | Commit-message format for the correction |
 
 ## Baseline acceptance criteria
@@ -73,6 +73,7 @@ No Airflow, dbt, DuckDB, Streamlit, or RAG code has been built or tested.
 - Separated skills used from skills merely inspected or proposed.
 - Replaced the generated-sounding README with a direct first-person account of the learning project.
 - Applied the delayed independent audit: defined slot success and DST handling, bounded pre-write storage, fixed static-version retention, narrowed demo controls, and specified safe DuckDB publication checks.
+- Grouped the harness documents under `docs/harness/` and added the agreed target-architecture diagram.
 
 ## What I learned from the baseline
 

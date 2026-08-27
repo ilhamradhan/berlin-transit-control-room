@@ -26,7 +26,7 @@
 - Source formats and failure behavior are verified.
 - No secret or dataset is committed.
 
-**Suggested skills:** `domain-modeling` if terminology remains ambiguous; `plan` for the executable Stage 1 task plan; `systematic-debugging` only if the spike fails unexpectedly; `architecture-diagram` for the accepted dark diagram.
+**Suggested skills:** `plan` for the executable Stage 1 task plan; `spike` for the disposable Airflow resource experiment; `domain-modeling` if terminology remains ambiguous; `systematic-debugging` only if the spike fails unexpectedly; `architecture-diagram` for the accepted dark diagram.
 
 ## Stage 2: Ingestion and storage
 

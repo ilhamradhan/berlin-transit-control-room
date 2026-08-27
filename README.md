@@ -53,18 +53,12 @@ These are samples of realtime predictions, not measured passenger arrival times.
 
 I make the product and architecture decisions. Hermes Agent helps with research, planning, implementation, documentation, and verification. The repository keeps a short record for each stage: my intent, the agent's rephrased prompt, skills actually used, acceptance criteria, commands run, results, and deviations.
 
-This is curated evidence, not a raw chat export. See [`HARNESS.md`](HARNESS.md), [`PROMPT.md`](PROMPT.md), and [`SKILLS.md`](SKILLS.md).
+This is curated evidence, not a raw chat export. The full record is under [`docs/harness/`](docs/harness/README.md).
 
-## Documentation
+## Continue the project
 
-- [`ARCHITECTURE.md`](ARCHITECTURE.md): system boundaries and data flow
-- [`PLAN.md`](PLAN.md): six implementation stages
-- [`SETUP.md`](SETUP.md): VPS constraints and the first Airflow spike
-- [`EVALUATION.md`](EVALUATION.md): acceptance tests
-- [`DECISIONS.md`](DECISIONS.md): accepted tradeoffs
-- [`DEPLOY.md`](DEPLOY.md): private runtime and public case-study plan
-- [`RUNBOOKS.md`](RUNBOOKS.md): planned incident procedures
-- [`docs/harness/stages/`](docs/harness/stages/): curated stage records
+- [`Harness documentation`](docs/harness/README.md): design, decisions, prompts, skills, stage gates, and evidence
+- [`Continuation prompts`](docs/harness/CONTINUE.md): start Stage 1 or resume an interrupted stage
 
 ## License and data attribution
 

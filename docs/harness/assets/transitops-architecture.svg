@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="820" viewBox="0 0 1200 820" role="img" aria-labelledby="title desc">
+  <title id="title">TransitOps Berlin target architecture</title>
+  <desc id="desc">VBB static and realtime feeds enter an Airflow-managed ingestion pipeline on a private VPS. Data moves through raw retention, Parquet, dbt, versioned DuckDB releases, and Streamlit. A separate read-only retrieval path uses sanitized documentation, LanceDB, and Gemini.</desc>
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#1e293b" stroke-width="0.6"/></pattern>
+    <marker id="arrow" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#64748b"/></marker>
+    <marker id="cyan-arrow" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#22d3ee"/></marker>
+    <marker id="rose-arrow" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#fb7185"/></marker>
+    <filter id="shadow"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000" flood-opacity="0.35"/></filter>
+  </defs>
+  <style>
+    text{font-family:'JetBrains Mono','SFMono-Regular',Consolas,monospace}.name{fill:#f8fafc;font-size:13px;font-weight:700}.sub{fill:#94a3b8;font-size:10px}.tiny{fill:#64748b;font-size:8px}.lane{fill:#cbd5e1;font-size:10px;font-weight:700;letter-spacing:1px}.label{fill:#94a3b8;font-size:9px}.flow{fill:none;stroke:#64748b;stroke-width:1.6;marker-end:url(#arrow)}.query{fill:none;stroke:#22d3ee;stroke-width:1.6;marker-end:url(#cyan-arrow)}.safe{fill:none;stroke:#fb7185;stroke-width:1.5;stroke-dasharray:6 5;marker-end:url(#rose-arrow)}.box{filter:url(#shadow)}
+  </style>
+  <rect width="1200" height="820" rx="16" fill="#020617"/>
+  <rect width="1200" height="820" rx="16" fill="url(#grid)"/>
+  <text x="36" y="42" fill="#f8fafc" font-size="21" font-weight="700">TransitOps Berlin</text>
+  <circle cx="24" cy="35" r="6" fill="#22d3ee"/>
+  <text x="36" y="64" fill="#94a3b8" font-size="11">Target architecture · private VPS · planned components</text>
+
+  <rect x="190" y="86" width="820" height="640" rx="14" fill="rgba(251,191,36,0.025)" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="8 5"/>
+  <text x="208" y="108" fill="#fbbf24" font-size="10" font-weight="700">TAILNET-ONLY VPS · RESOURCE BOUNDS VERIFIED IN STAGE 1</text>
+  <text x="30" y="130" class="lane">VBB SOURCES</text>
+  <text x="220" y="130" class="lane">ORCHESTRATION</text>
+  <text x="430" y="130" class="lane">COLLECTION</text>
+  <text x="650" y="130" class="lane">ANALYTICS</text>
+  <text x="840" y="130" class="lane">APPLICATION</text>
+
+  <!-- Flows are drawn before boxes -->
+  <path class="flow" d="M160 196H218"/><path class="flow" d="M160 296H218"/>
+  <path class="flow" d="M390 226H428"/><path class="flow" d="M590 226H638"/>
+  <path class="flow" d="M715 266V318"/><path class="flow" d="M638 358H590"/>
+  <path class="flow" d="M510 398V468"/><path class="flow" d="M590 508H638"/>
+  <path class="flow" d="M800 508H838"/><path class="query" d="M990 368H1040"/>
+  <path class="flow" d="M305 266V282H915V268"/><path class="flow" d="M915 266V316"/>
+  <path class="flow" d="M390 226H405V610H428"/>
+  <path class="safe" d="M160 626H428"/><path class="safe" d="M590 626H638"/>
+  <path class="query" d="M918 408V666H800"/><path class="safe" d="M800 626H1040"/>
+  <path class="safe" d="M1110 586V430H990"/>
+
+  <text x="172" y="188" class="label">daily check</text><text x="167" y="288" class="label">15 min</text>
+  <text x="608" y="218" class="label">valid</text><text x="720" y="292" class="label">48 h</text>
+  <text x="608" y="350" class="label">read</text><text x="614" y="500" class="label">pass</text>
+  <text x="812" y="500" class="label">current.json</text>
+  <text x="485" y="277" class="label">run + incident metadata</text>
+  <text x="252" y="616" class="label">approved corpus</text><text x="608" y="616" class="label">index</text>
+  <text x="820" y="649" class="label">retrieval query</text><text x="904" y="616" class="label">sanitized passages only</text>
+
+  <!-- External source boxes -->
+  <g class="box"><rect x="30" y="158" width="130" height="76" rx="7" fill="#0f172a"/><rect x="30" y="158" width="130" height="76" rx="7" fill="rgba(30,41,59,.55)" stroke="#94a3b8" stroke-width="1.5"/><text x="95" y="184" class="name" text-anchor="middle">Static GTFS</text><text x="95" y="203" class="sub" text-anchor="middle">schedule archive</text><text x="95" y="219" class="tiny" text-anchor="middle">download on change</text></g>
+  <g class="box"><rect x="30" y="258" width="130" height="76" rx="7" fill="#0f172a"/><rect x="30" y="258" width="130" height="76" rx="7" fill="rgba(30,41,59,.55)" stroke="#94a3b8" stroke-width="1.5"/><text x="95" y="284" class="name" text-anchor="middle">GTFS-Realtime</text><text x="95" y="303" class="sub" text-anchor="middle">trip updates</text><text x="95" y="319" class="tiny" text-anchor="middle">source freshness check</text></g>
+
+  <!-- VPS boxes -->
+  <g class="box"><rect x="220" y="166" width="170" height="100" rx="7" fill="#0f172a"/><rect x="220" y="166" width="170" height="100" rx="7" fill="rgba(6,78,59,.40)" stroke="#34d399" stroke-width="1.5"/><text x="305" y="194" class="name" text-anchor="middle">Apache Airflow</text><text x="305" y="214" class="sub" text-anchor="middle">schedule + task control</text><text x="305" y="234" class="tiny" text-anchor="middle">explicit dbt CLI</text><text x="305" y="249" class="tiny" text-anchor="middle">low parallelism</text></g>
+  <g class="box"><rect x="430" y="176" width="160" height="90" rx="7" fill="#0f172a"/><rect x="430" y="176" width="160" height="90" rx="7" fill="rgba(6,78,59,.40)" stroke="#34d399" stroke-width="1.5"/><text x="510" y="202" class="name" text-anchor="middle">Ingestion</text><text x="510" y="221" class="sub" text-anchor="middle">parse · filter · validate</text><text x="510" y="240" class="tiny" text-anchor="middle">idempotent slot commit</text></g>
+  <g class="box"><rect x="640" y="176" width="160" height="90" rx="7" fill="#0f172a"/><rect x="640" y="176" width="160" height="90" rx="7" fill="rgba(76,29,149,.40)" stroke="#a78bfa" stroke-width="1.5"/><text x="720" y="202" class="name" text-anchor="middle">Raw + quarantine</text><text x="720" y="221" class="sub" text-anchor="middle">protobuf payloads</text><text x="720" y="240" class="tiny" text-anchor="middle">bounded by 4 GB cap</text></g>
+  <g class="box"><rect x="640" y="318" width="160" height="80" rx="7" fill="#0f172a"/><rect x="640" y="318" width="160" height="80" rx="7" fill="rgba(76,29,149,.40)" stroke="#a78bfa" stroke-width="1.5"/><text x="720" y="345" class="name" text-anchor="middle">Parquet</text><text x="720" y="364" class="sub" text-anchor="middle">date partitions</text><text x="720" y="382" class="tiny" text-anchor="middle">compacted observations</text></g>
+  <g class="box"><rect x="430" y="318" width="160" height="80" rx="7" fill="#0f172a"/><rect x="430" y="318" width="160" height="80" rx="7" fill="rgba(6,78,59,.40)" stroke="#34d399" stroke-width="1.5"/><text x="510" y="345" class="name" text-anchor="middle">dbt Core</text><text x="510" y="364" class="sub" text-anchor="middle">models + quality tests</text><text x="510" y="382" class="tiny" text-anchor="middle">failed tests block release</text></g>
+  <g class="box"><rect x="430" y="468" width="160" height="80" rx="7" fill="#0f172a"/><rect x="430" y="468" width="160" height="80" rx="7" fill="rgba(76,29,149,.40)" stroke="#a78bfa" stroke-width="1.5"/><text x="510" y="495" class="name" text-anchor="middle">Candidate DuckDB</text><text x="510" y="514" class="sub" text-anchor="middle">checkpoint + close</text><text x="510" y="532" class="tiny" text-anchor="middle">independent read-only check</text></g>
+  <g class="box"><rect x="640" y="468" width="160" height="80" rx="7" fill="#0f172a"/><rect x="640" y="468" width="160" height="80" rx="7" fill="rgba(76,29,149,.40)" stroke="#a78bfa" stroke-width="1.5"/><text x="720" y="495" class="name" text-anchor="middle">Verified DuckDB</text><text x="720" y="514" class="sub" text-anchor="middle">versioned release</text><text x="720" y="532" class="tiny" text-anchor="middle">current + previous retained</text></g>
+  <g class="box"><rect x="840" y="166" width="150" height="100" rx="7" fill="#0f172a"/><rect x="840" y="166" width="150" height="100" rx="7" fill="rgba(76,29,149,.40)" stroke="#a78bfa" stroke-width="1.5"/><text x="915" y="194" class="name" text-anchor="middle">SQLite control</text><text x="915" y="214" class="sub" text-anchor="middle">incidents + actions</text><text x="915" y="234" class="tiny" text-anchor="middle">WAL mode</text><text x="915" y="249" class="tiny" text-anchor="middle">audit + health checks</text></g>
+  <g class="box"><rect x="840" y="318" width="150" height="90" rx="7" fill="#0f172a"/><rect x="840" y="318" width="150" height="90" rx="7" fill="rgba(8,51,68,.40)" stroke="#22d3ee" stroke-width="1.5"/><text x="915" y="345" class="name" text-anchor="middle">Streamlit</text><text x="915" y="364" class="sub" text-anchor="middle">Control Room + explorer</text><text x="915" y="383" class="tiny" text-anchor="middle">verified release only</text></g>
+
+  <!-- Retrieval lane -->
+  <text x="220" y="580" class="lane">READ-ONLY RETRIEVAL LANE</text>
+  <g class="box"><rect x="30" y="588" width="130" height="76" rx="7" fill="#0f172a"/><rect x="30" y="588" width="130" height="76" rx="7" fill="rgba(30,41,59,.55)" stroke="#94a3b8" stroke-width="1.5"/><text x="95" y="614" class="name" text-anchor="middle">Approved docs</text><text x="95" y="633" class="sub" text-anchor="middle">runbooks + metadata</text><text x="95" y="649" class="tiny" text-anchor="middle">no raw logs or secrets</text></g>
+  <g class="box"><rect x="430" y="588" width="160" height="76" rx="7" fill="#0f172a"/><rect x="430" y="588" width="160" height="76" rx="7" fill="rgba(136,19,55,.40)" stroke="#fb7185" stroke-width="1.5"/><text x="510" y="614" class="name" text-anchor="middle">Sanitizer</text><text x="510" y="633" class="sub" text-anchor="middle">allowlisted fields only</text><text x="510" y="649" class="tiny" text-anchor="middle">redact before indexing</text></g>
+  <g class="box"><rect x="640" y="588" width="160" height="76" rx="7" fill="#0f172a"/><rect x="640" y="588" width="160" height="76" rx="7" fill="rgba(76,29,149,.40)" stroke="#a78bfa" stroke-width="1.5"/><text x="720" y="614" class="name" text-anchor="middle">LanceDB</text><text x="720" y="633" class="sub" text-anchor="middle">local embeddings</text><text x="720" y="649" class="tiny" text-anchor="middle">corpus + index under 1 GB</text></g>
+
+  <!-- External consumers -->
+  <g class="box"><rect x="1040" y="318" width="140" height="112" rx="7" fill="#0f172a"/><rect x="1040" y="318" width="140" height="112" rx="7" fill="rgba(30,41,59,.55)" stroke="#94a3b8" stroke-width="1.5"/><text x="1110" y="347" class="name" text-anchor="middle">Operator</text><text x="1110" y="367" class="sub" text-anchor="middle">private browser</text><text x="1110" y="391" class="tiny" text-anchor="middle">inspect evidence</text><text x="1110" y="407" class="tiny" text-anchor="middle">run demo controls</text></g>
+  <g class="box"><rect x="1040" y="586" width="140" height="80" rx="7" fill="#0f172a"/><rect x="1040" y="586" width="140" height="80" rx="7" fill="rgba(30,41,59,.55)" stroke="#94a3b8" stroke-width="1.5"/><text x="1110" y="613" class="name" text-anchor="middle">Gemini</text><text x="1110" y="632" class="sub" text-anchor="middle">cited explanations</text><text x="1110" y="650" class="tiny" text-anchor="middle">cannot change state</text></g>
+
+  <!-- Legend outside the VPS boundary -->
+  <g transform="translate(210 756)"><rect width="14" height="10" rx="2" fill="rgba(30,41,59,.55)" stroke="#94a3b8"/><text x="21" y="9" class="tiny">External</text><rect x="100" width="14" height="10" rx="2" fill="rgba(6,78,59,.40)" stroke="#34d399"/><text x="121" y="9" class="tiny">Processing</text><rect x="220" width="14" height="10" rx="2" fill="rgba(76,29,149,.40)" stroke="#a78bfa"/><text x="241" y="9" class="tiny">Storage</text><rect x="330" width="14" height="10" rx="2" fill="rgba(8,51,68,.40)" stroke="#22d3ee"/><text x="351" y="9" class="tiny">Application</text><rect x="470" width="14" height="10" rx="2" fill="rgba(136,19,55,.40)" stroke="#fb7185"/><text x="491" y="9" class="tiny">Sanitization boundary</text></g>
+  <text x="1170" y="790" fill="#475569" font-size="8" text-anchor="end">Target design · update after Stage 1 measurements</text>
+</svg>

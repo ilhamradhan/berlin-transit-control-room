@@ -2,27 +2,13 @@
 
 **Status:** accepted target architecture; implementation is pending.
 
-## System flow
+## Target architecture
 
-```text
-VBB static GTFS (daily change check) ───────────────┐
-                                                    ├─ Airflow ingestion and validation
-VBB GTFS-Realtime (every 15 minutes) ──────────────┘
-                         │
-             raw protobuf, 48-hour retention
-                         │
-              parse, filter, validate, compact
-                         │
-            date-partitioned Parquet observations
-                         │
-                 dbt CLI executed by Airflow
-                         │
-              candidate DuckDB release + tests
-                         │ success only
-                 atomic current.json publication
-                         │
-          Streamlit reads current verified release
-```
+![TransitOps Berlin target architecture](assets/transitops-architecture.svg)
+
+[Open the standalone HTML diagram](assets/transitops-architecture.html)
+
+This is the accepted target design, not a claim about deployed services. Stage 1 must measure the lightweight Airflow topology and update any component or resource assumption that the spike disproves.
 
 A separate SQLite control-plane database stores incidents, acknowledgements, approved demo actions, outcomes, and post-action health checks.
 
