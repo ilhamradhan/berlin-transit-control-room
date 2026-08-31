@@ -35,9 +35,12 @@ Each file in `docs/harness/stages/` records:
 
 Raw transcripts, chain-of-thought, secrets, and unfiltered logs do not belong in the repository.
 
+Hermes Kanban board `transitops-berlin` tracks active local work and stage dependencies. Kanban state is coordination data, not portfolio evidence; the curated stage records remain the public source of accepted prompts, checks, results, and deviations.
+
 ## Working rules
 
 - Mark unbuilt features as planned.
+- Load `ponytail:ponytail` at `full` before any coding task and keep it active until the user explicitly disables it.
 - Use the smallest skill set that fits the current stage.
 - Do not call a skill "used" merely because it was inspected.
 - Test new behavior before accepting it.
@@ -46,6 +49,7 @@ Raw transcripts, chain-of-thought, secrets, and unfiltered logs do not belong in
 - Do not send secrets, connection strings, environment variables, or raw logs to Gemini.
 - Do not let the LLM run commands or change pipeline state.
 - Do not stop unrelated VPS services.
+- Before a coding stage passes, run the normal acceptance checks and a separate `ponytail:ponytail-review`; complexity review never replaces correctness review.
 
 ## Choosing skills
 

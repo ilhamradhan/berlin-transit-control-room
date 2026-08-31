@@ -32,6 +32,9 @@ This file summarizes accepted decisions from the requirements grill. Detailed im
 | D-026 | Publish curated stage records with rephrased prompts | Reproducible evidence is useful; raw transcripts are noisy and risk sensitive disclosure. |
 | D-027 | Use a dark HTML/SVG architecture diagram | Matches the selected visual preference; Excalidraw is not required. |
 | D-028 | Make the repository public under MIT | Code/docs are shareable; real data and secrets remain excluded. |
+| D-029 | Spike `v6.vbb.transport.rest` as an optional diagnostic source | It may add current disruption context, but it will not replace official GTFS sources, count toward collection-slot success, or become an automatic fallback. Identifier mapping and data-use terms must pass a bounded Stage 1 check. |
+| D-030 | Use Ponytail at full as the implementation guardrail | Every coding task starts with the existing plugin loaded. Prefer deletion, reuse, standard-library and native features, and the shortest verified implementation without weakening validation, security, or explicit requirements. |
+| D-031 | Use a project-scoped Hermes Kanban board | Durable tasks, dependencies, worktrees, and human blocks fit the phase-gated workflow. Curated stage records remain the public evidence; local board rows do not replace them. |
 
 ## Rejected or deferred alternatives
 

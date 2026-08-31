@@ -4,6 +4,21 @@
 
 Acceptance requires real, recorded evidence. A generated answer, successful write call, or completed checklist is not proof by itself.
 
+For every code-producing stage, record that `ponytail:ponytail` was active at `full`, run the smallest relevant check for non-trivial logic, and run `ponytail:ponytail-review` on the final diff. A lean diff still must pass all correctness, security, and stage-specific checks.
+
+## Optional REST source comparison
+
+- Query a small fixed sample covering one U-Bahn, one S-Bahn, and one tram stop. Do not crawl the network.
+- Compare current delay, cancellation, platform, and disruption fields with official GTFS-Realtime for the same observation window.
+- Record stop, line, and trip identifier mapping results against static GTFS. Do not assume HAFAS trip IDs are GTFS trip IDs.
+- Record response status, latency, cache headers, payload size, and documented rate limits.
+- Confirm acceptable data-use and attribution terms before retaining or publishing returned data. The wrapper's software license is not evidence of a license for its transit responses.
+- Store only sanitized fixtures and aggregate comparison results. Do not start a second historical archive.
+- A wrapper outage or mismatch never changes official collection-slot success and never triggers an automatic fallback.
+- End with one verdict: reject, use only for diagnostics, or allow bounded on-demand incident enrichment.
+
+References: [`v6.vbb.transport.rest` documentation](https://v6.vbb.transport.rest/), [API routes](https://v6.vbb.transport.rest/api.html), and the [official VBB API access process](https://unternehmen.vbb.de/digitale-services/api/).
+
 ## Ingestion and storage
 
 - Expect 96 slots per 24 elapsed hours. Generate the denominator from UTC schedule intervals so Europe/Berlin daylight-saving days can contain 92 or 100 slots.

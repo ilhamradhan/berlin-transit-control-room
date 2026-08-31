@@ -2,12 +2,17 @@
 
 A skill is **used** only when its workflow changes an artifact or action. Reading a skill to understand it is not enough.
 
+## Active implementation guardrail
+
+`ponytail:ponytail` is active at `full`. It must be loaded before planning, writing, refactoring, debugging, or reviewing code from Stage 1 onward. The project context file [`.hermes.md`](../../.hermes.md) enforces this in future Hermes sessions. `ponytail:ponytail-review` checks implementation diffs for avoidable complexity at coding-stage gates; it does not replace correctness, security, or acceptance review.
+
 ## Used
 
 | Skill | Where it helped |
 |---|---|
 | `grill-me` | Ran the requirements interview that produced the accepted decisions. The skill delegates internally to the `grilling` workflow. |
 | `github-repo-management` | Guided public repository creation and remote verification. |
+| `hermes-agent` | Set up and verified the project-scoped Kanban board and durable stage dependencies. |
 | `agent-harness-project-delivery` | Checked the repository's skill accounting, stage records, status labels, and publication evidence. |
 | `architecture-diagram` | Produced the embedded SVG and standalone HTML target-architecture diagram. |
 | `caveman-commit` | Produced the concise Conventional Commit message for the documentation correction. |

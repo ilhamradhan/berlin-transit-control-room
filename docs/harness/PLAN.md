@@ -14,6 +14,7 @@
 - Non-destructive preflight
 - Verified static and realtime source samples
 - Captured VBB feed-status or Atom notice alongside source samples
+- Bounded `v6.vbb.transport.rest` comparison spike with an identifier, coverage, and data-use verdict
 - Source contracts and domain glossary
 - Dark HTML/SVG architecture diagram
 - Stage record
@@ -24,9 +25,11 @@
 - Sample DAG completes.
 - Idle/active memory and disk projections are recorded.
 - Source formats and failure behavior are verified.
+- The REST comparison records whether stop, line, and trip identifiers map to GTFS; it does not alter official collection-slot success or provide an automatic fallback.
+- Any Stage 1 code was produced with `ponytail:ponytail` active at `full`, includes the smallest runnable check required by the guardrail, and passes a separate complexity review before Stage 2 begins.
 - No secret or dataset is committed.
 
-**Suggested skills:** `plan` for the executable Stage 1 task plan; `spike` for the disposable Airflow resource experiment; `domain-modeling` if terminology remains ambiguous; `systematic-debugging` only if the spike fails unexpectedly; `architecture-diagram` for the accepted dark diagram.
+**Suggested skills:** `plan` for the executable Stage 1 task plan; `spike` for the disposable Airflow resource and REST comparison experiments; `domain-modeling` if terminology remains ambiguous; `systematic-debugging` only if a spike fails unexpectedly; `architecture-diagram` for the accepted dark diagram.
 
 ## Stage 2: Ingestion and storage
 
@@ -132,6 +135,8 @@
 ## Cross-stage rules
 
 - One stage in progress at a time.
+- Kanban task dependencies mirror stage gates; a downstream stage stays blocked until its parent gate is done.
+- `ponytail:ponytail` at `full` is required before planning, writing, refactoring, debugging, or reviewing code.
 - Use skills by need, not by checklist.
 - Code behavior uses test-first development where practical.
 - Every external state change is read back.

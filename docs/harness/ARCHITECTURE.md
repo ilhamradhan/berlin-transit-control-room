@@ -18,6 +18,10 @@ The historical observation layer stores only fields required by the product, inc
 
 Metrics are calculated deterministically by dbt and DuckDB. The RAG assistant does not calculate or override metrics.
 
+## Optional diagnostic source
+
+Stage 1 will compare a small sample from [`v6.vbb.transport.rest`](https://v6.vbb.transport.rest/) with official GTFS-Realtime. This community-operated HAFAS wrapper is outside the primary collection path and therefore absent from the core diagram. It may be accepted later for bounded, on-demand incident enrichment only if identifier mapping, added disruption value, reliability, and data-use terms are adequate. Its health never changes official collection-slot success, and it is not an automatic fallback.
+
 ## Versioned publication
 
 1. dbt builds a candidate DuckDB file.

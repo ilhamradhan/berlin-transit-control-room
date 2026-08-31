@@ -45,3 +45,4 @@ rag/index/
 .DS_Store
 .vscode/
 .idea/
+.worktrees/

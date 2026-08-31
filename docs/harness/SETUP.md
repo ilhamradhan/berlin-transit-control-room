@@ -25,6 +25,7 @@ The [official Airflow Docker guide](https://airflow.apache.org/docs/apache-airfl
 - Run only required Airflow components.
 - Apply explicit resource limits after measuring startup behavior.
 - Verify one sample DAG under idle and active load.
+- Run a bounded comparison of three representative stops through `v6.vbb.transport.rest`; do not crawl or archive the network.
 - Fall back to Airflow standalone only if the production-shaped topology is unstable, and label standalone accurately as a learning/development deployment.
 
 ## Non-destructive preflight
