@@ -1,6 +1,6 @@
 # Harness documentation
 
-This folder contains the project design, agent instructions, stage gates, and evidence records. The implementation has not started. The completed work is the design baseline in [`stages/00-design-baseline.md`](stages/00-design-baseline.md).
+This folder contains the project design, agent instructions, stage gates, and evidence records. Stage 1 passed with documented source caveats and an accepted cron-production/synthetic-Airflow boundary. See [`stages/01-stage-gate.md`](stages/01-stage-gate.md).
 
 ## Start here
 
@@ -12,6 +12,10 @@ This folder contains the project design, agent instructions, stage gates, and ev
 | [`HARNESS.md`](HARNESS.md) | Rules for agent use, evidence, and stage completion |
 | [`EVALUATION.md`](EVALUATION.md) | Checks that prove a stage is complete |
 | [`SKILLS.md`](SKILLS.md) | Skills used, proposed, inspected, or excluded |
+| [`stages/01-stage-gate.md`](stages/01-stage-gate.md) | Stage 1 evidence, failed criteria, and remediation boundary |
+| [`SOURCES.md`](SOURCES.md) | Accepted VBB source roles and constraints |
+| [`SOURCE_CONTRACTS.md`](SOURCE_CONTRACTS.md) | Static GTFS, GTFS-Realtime, and REST contracts |
+| [`GLOSSARY.md`](GLOSSARY.md) | Source and mapping terminology |
 
 ## Design and operations
 

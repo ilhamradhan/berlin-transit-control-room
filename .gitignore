@@ -30,6 +30,7 @@ data/
 warehouse/releases/
 warehouse/current.json
 state/*.sqlite*
+state/*.lock
 *.duckdb
 *.duckdb.*
 *.parquet
@@ -45,4 +46,5 @@ rag/index/
 .DS_Store
 .vscode/
 .idea/
+.hermes.md
 .worktrees/

@@ -6,6 +6,8 @@
 
 ## Stage 1: Harness and source validation
 
+**Status:** passed. Airflow's failed VPS spike established the accepted trust boundary, the cron production-readiness checks pass, and independent correctness, security, evidence, complexity, and architecture reviews found no remaining blockers.
+
 **Deliverables**
 
 - Repository and documentation baseline
@@ -22,7 +24,7 @@
 **Gate**
 
 - Existing VPS services remain healthy.
-- Sample DAG completes.
+- One cron-triggered real-source smoke run completes without overlapping another run.
 - Idle/active memory and disk projections are recorded.
 - Source formats and failure behavior are verified.
 - The REST comparison records whether stop, line, and trip identifiers map to GTFS; it does not alter official collection-slot success or provide an automatic fallback.
@@ -31,12 +33,16 @@
 
 **Suggested skills:** `plan` for the executable Stage 1 task plan; `spike` for the disposable Airflow resource and REST comparison experiments; `domain-modeling` if terminology remains ambiguous; `systematic-debugging` only if a spike fails unexpectedly; `architecture-diagram` for the accepted dark diagram.
 
+**Next action:** plan Stage 2 from the accepted Stage 1 records. Do not repeat the Airflow feasibility spike; the Dockerized Airflow demo belongs to Stage 2 and does not count as production evidence.
+
 ## Stage 2: Ingestion and storage
 
 **Deliverables**
 
-- Fifteen-minute realtime DAG
-- Daily static GTFS change check
+- Fifteen-minute realtime cron job
+- Daily static GTFS cron job
+- Shared idempotent pipeline commands used by both schedulers
+- Dockerized Airflow demo DAGs using synthetic fixtures and isolated demo state
 - Parsing and Berlin mode filtering
 - Raw retention and quarantine policy
 - Date-partitioned Parquet writing and daily compaction
@@ -47,6 +53,8 @@
 
 - Synthetic tests pass before live collection.
 - Duplicate/idempotent runs do not duplicate observations.
+- Airflow demo runs cannot read or write production collection paths.
+- Stage evidence labels scheduler, data origin, and namespace according to the canonical [scheduler and data trust boundary](ARCHITECTURE.md#scheduler-and-data-trust-boundary).
 - Raw and quarantined payloads expire after 48 hours; only sanitized test fixtures persist.
 - A slot succeeds only after protobuf parsing, freshness validation, and normalized-output commit; unchanged payloads and entity completeness are separate metrics.
 - Before each write, projected counted storage is checked and collection pauses instead of exceeding 4 GB.
@@ -60,7 +68,7 @@
 - dbt staging, intermediate, and mart layers
 - Source, schema, relationship, and business-rule tests
 - Reliability and coverage metrics
-- Explicit dbt CLI Airflow tasks
+- Explicit dbt CLI commands called by the production release job and Airflow demo tasks
 - Candidate DuckDB build, test gate, atomic publication, and rollback retention
 - dbt artifact parsing for operational status
 
@@ -142,3 +150,4 @@
 - Every external state change is read back.
 - No push occurs unless explicitly requested; repository creation and initial push are explicitly authorized in this session.
 - Weather, cloud storage, local generation models, and arbitrary recovery controls are out of scope.
+- Scheduler and data provenance follow the canonical [trust boundary](ARCHITECTURE.md#scheduler-and-data-trust-boundary); other documents link to it instead of redefining it.

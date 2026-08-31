@@ -4,7 +4,7 @@ A skill is **used** only when its workflow changes an artifact or action. Readin
 
 ## Active implementation guardrail
 
-`ponytail:ponytail` is active at `full`. It must be loaded before planning, writing, refactoring, debugging, or reviewing code from Stage 1 onward. The project context file [`.hermes.md`](../../.hermes.md) enforces this in future Hermes sessions. `ponytail:ponytail-review` checks implementation diffs for avoidable complexity at coding-stage gates; it does not replace correctness, security, or acceptance review.
+`ponytail:ponytail` is required at `full` before planning, writing, refactoring, debugging, or reviewing code. `ponytail:ponytail-review` checks implementation diffs for avoidable complexity at coding-stage gates; it does not replace correctness, security, or acceptance review.
 
 ## Used
 
@@ -16,8 +16,10 @@ A skill is **used** only when its workflow changes an artifact or action. Readin
 | `agent-harness-project-delivery` | Checked the repository's skill accounting, stage records, status labels, and publication evidence. |
 | `architecture-diagram` | Produced the embedded SVG and standalone HTML target-architecture diagram. |
 | `caveman-commit` | Produced the concise Conventional Commit message for the documentation correction. |
-
-`requesting-code-review` was inspected but not used because its own workflow says to skip documentation-only changes.
+| `ponytail:ponytail` | Kept the failed Airflow runtime out of the repository and limited Stage 1 promotion to accepted aggregate evidence. |
+| `ponytail:ponytail-review` | Checked the gate diff for duplicate evidence and speculative runtime artifacts. |
+| `test-driven-development` | Drove failing tests before the retained smoke command and each blocking correction. |
+| `requesting-code-review` | Found and verified fixes for unsafe locking, unbounded response time, non-JSON failures, unsupported evidence, test isolation, and stale architecture labels. |
 
 ## Likely later
 
@@ -36,7 +38,6 @@ These entries are candidates or selected future tools, not work already complete
 
 ## Excluded
 
-- `streamlit-analytics-dashboard-redesign` is not part of this project.
 - Excalidraw was considered, but the project uses a dark HTML/SVG architecture diagram.
 - Autonomous multi-agent implementation is not part of the current plan.
 

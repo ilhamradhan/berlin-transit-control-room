@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="820" viewBox="0 0 1200 820" role="img" aria-labelledby="title desc">
   <title id="title">TransitOps Berlin target architecture</title>
-  <desc id="desc">VBB static and realtime feeds enter an Airflow-managed ingestion pipeline on a private VPS. Data moves through raw retention, Parquet, dbt, versioned DuckDB releases, and Streamlit. A separate read-only retrieval path uses sanitized documentation, LanceDB, and Gemini.</desc>
+  <desc id="desc">Target production flow from VBB feeds through cron, ingestion, storage, dbt, DuckDB, and Streamlit. Dockerized Airflow is restricted to isolated synthetic demonstrations.</desc>
   <defs>
     <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M40 0H0V40" fill="none" stroke="#1e293b" stroke-width="0.6"/></pattern>
     <marker id="arrow" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#64748b"/></marker>
@@ -15,10 +15,10 @@
   <rect width="1200" height="820" rx="16" fill="url(#grid)"/>
   <text x="36" y="42" fill="#f8fafc" font-size="21" font-weight="700">TransitOps Berlin</text>
   <circle cx="24" cy="35" r="6" fill="#22d3ee"/>
-  <text x="36" y="64" fill="#94a3b8" font-size="11">Target architecture · private VPS · planned components</text>
+  <text x="36" y="64" fill="#94a3b8" font-size="11">Target architecture · cron production · isolated synthetic Airflow demo</text>
 
   <rect x="190" y="86" width="820" height="640" rx="14" fill="rgba(251,191,36,0.025)" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="8 5"/>
-  <text x="208" y="108" fill="#fbbf24" font-size="10" font-weight="700">TAILNET-ONLY VPS · RESOURCE BOUNDS VERIFIED IN STAGE 1</text>
+  <text x="208" y="108" fill="#fbbf24" font-size="10" font-weight="700">TARGET PRIVATE RUNTIME · CRON PRODUCTION · AIRFLOW SYNTHETIC ONLY</text>
   <text x="30" y="130" class="lane">VBB SOURCES</text>
   <text x="220" y="130" class="lane">ORCHESTRATION</text>
   <text x="430" y="130" class="lane">COLLECTION</text>
@@ -50,7 +50,7 @@
   <g class="box"><rect x="30" y="258" width="130" height="76" rx="7" fill="#0f172a"/><rect x="30" y="258" width="130" height="76" rx="7" fill="rgba(30,41,59,.55)" stroke="#94a3b8" stroke-width="1.5"/><text x="95" y="284" class="name" text-anchor="middle">GTFS-Realtime</text><text x="95" y="303" class="sub" text-anchor="middle">trip updates</text><text x="95" y="319" class="tiny" text-anchor="middle">source freshness check</text></g>
 
   <!-- VPS boxes -->
-  <g class="box"><rect x="220" y="166" width="170" height="100" rx="7" fill="#0f172a"/><rect x="220" y="166" width="170" height="100" rx="7" fill="rgba(6,78,59,.40)" stroke="#34d399" stroke-width="1.5"/><text x="305" y="194" class="name" text-anchor="middle">Apache Airflow</text><text x="305" y="214" class="sub" text-anchor="middle">schedule + task control</text><text x="305" y="234" class="tiny" text-anchor="middle">explicit dbt CLI</text><text x="305" y="249" class="tiny" text-anchor="middle">low parallelism</text></g>
+  <g class="box"><rect x="220" y="166" width="170" height="100" rx="7" fill="#0f172a"/><rect x="220" y="166" width="170" height="100" rx="7" fill="rgba(6,78,59,.40)" stroke="#34d399" stroke-width="1.5"/><text x="305" y="194" class="name" text-anchor="middle">Cron (production)</text><text x="305" y="214" class="sub" text-anchor="middle">real VBB schedule</text><text x="305" y="234" class="tiny" text-anchor="middle">shared idempotent commands</text><text x="305" y="249" class="tiny" text-anchor="middle">Airflow: synthetic demo only</text></g>
   <g class="box"><rect x="430" y="176" width="160" height="90" rx="7" fill="#0f172a"/><rect x="430" y="176" width="160" height="90" rx="7" fill="rgba(6,78,59,.40)" stroke="#34d399" stroke-width="1.5"/><text x="510" y="202" class="name" text-anchor="middle">Ingestion</text><text x="510" y="221" class="sub" text-anchor="middle">parse · filter · validate</text><text x="510" y="240" class="tiny" text-anchor="middle">idempotent slot commit</text></g>
   <g class="box"><rect x="640" y="176" width="160" height="90" rx="7" fill="#0f172a"/><rect x="640" y="176" width="160" height="90" rx="7" fill="rgba(76,29,149,.40)" stroke="#a78bfa" stroke-width="1.5"/><text x="720" y="202" class="name" text-anchor="middle">Raw + quarantine</text><text x="720" y="221" class="sub" text-anchor="middle">protobuf payloads</text><text x="720" y="240" class="tiny" text-anchor="middle">bounded by 4 GB cap</text></g>
   <g class="box"><rect x="640" y="318" width="160" height="80" rx="7" fill="#0f172a"/><rect x="640" y="318" width="160" height="80" rx="7" fill="rgba(76,29,149,.40)" stroke="#a78bfa" stroke-width="1.5"/><text x="720" y="345" class="name" text-anchor="middle">Parquet</text><text x="720" y="364" class="sub" text-anchor="middle">date partitions</text><text x="720" y="382" class="tiny" text-anchor="middle">compacted observations</text></g>
@@ -72,5 +72,5 @@
 
   <!-- Legend outside the VPS boundary -->
   <g transform="translate(210 756)"><rect width="14" height="10" rx="2" fill="rgba(30,41,59,.55)" stroke="#94a3b8"/><text x="21" y="9" class="tiny">External</text><rect x="100" width="14" height="10" rx="2" fill="rgba(6,78,59,.40)" stroke="#34d399"/><text x="121" y="9" class="tiny">Processing</text><rect x="220" width="14" height="10" rx="2" fill="rgba(76,29,149,.40)" stroke="#a78bfa"/><text x="241" y="9" class="tiny">Storage</text><rect x="330" width="14" height="10" rx="2" fill="rgba(8,51,68,.40)" stroke="#22d3ee"/><text x="351" y="9" class="tiny">Application</text><rect x="470" width="14" height="10" rx="2" fill="rgba(136,19,55,.40)" stroke="#fb7185"/><text x="491" y="9" class="tiny">Sanitization boundary</text></g>
-  <text x="1170" y="790" fill="#475569" font-size="8" text-anchor="end">Target design · update after Stage 1 measurements</text>
+  <text x="1170" y="790" fill="#475569" font-size="8" text-anchor="end">Target design · accepted scheduler boundary</text>
 </svg>

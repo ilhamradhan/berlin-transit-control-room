@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "run": {
+    "scheduler": "user-cron",
+    "marker": "transitops-stage1-smoke-fixed-20260831T130819Z",
+    "command": "/usr/bin/python3 scripts/stage1_smoke.py",
+    "started_at": "2026-08-31T13:10:01.717202+00:00",
+    "exit_status": 0,
+    "stderr_empty": true,
+    "result": "ok",
+    "response_bytes": 11626434,
+    "content_type": "application/protobuf",
+    "elapsed_seconds": 0.45,
+    "peak_rss_bytes": 35651584,
+    "process_swaps": 0
+  },
+  "preflight": {
+    "available_memory_bytes": 2079662080,
+    "available_disk_bytes": 27516837888,
+    "lock_mode": "0600",
+    "lock_owner": "rama",
+    "lock_group": "rama"
+  },
+  "host_before": {
+    "available_memory_bytes": 2080219136,
+    "swap_used_bytes": 572936192,
+    "root_available_bytes": 27517075456
+  },
+  "host_after": {
+    "available_memory_bytes": 2076860416,
+    "swap_used_bytes": 572674048,
+    "root_available_bytes": 27516780544
+  },
+  "protected_services": {
+    "all_running_before": true,
+    "all_running_after": true,
+    "health_unchanged": true,
+    "restart_count_before": 0,
+    "restart_count_after": 0,
+    "oom_events": 0
+  },
+  "storage_projection": {
+    "realtime_slots_per_day": 96,
+    "raw_retention_hours": 48,
+    "raw_48h_bytes": 2232275328,
+    "download_28d_bytes_not_retained": 31251854592,
+    "static_version_bytes": 80429936,
+    "assumed_static_versions_retained": 8,
+    "static_retained_bytes": 643439488,
+    "combined_before_parquet_and_quarantine_bytes": 2875714816,
+    "remaining_under_4gib_cap_bytes": 1419252480
+  },
+  "cleanup": {
+    "cron_entry_removed": true,
+    "temporary_files_removed": true,
+    "lock_removed": true,
+    "protected_containers_unchanged_after_cleanup": true
+  },
+  "limitations": [
+    "This curated artifact contains aggregate measurements only; no VBB payload was retained.",
+    "The storage projection uses one measured realtime payload and eight retained static versions.",
+    "Stage 2 must replace the unknown normalized-output term with its 24-hour pilot measurement."
+  ]
+}

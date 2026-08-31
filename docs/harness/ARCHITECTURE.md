@@ -1,6 +1,6 @@
 # Architecture
 
-**Status:** accepted target architecture; implementation is pending.
+**Status:** accepted target architecture; the scheduler boundary and Stage 1 production-readiness evidence passed independent review.
 
 ## Target architecture
 
@@ -8,9 +8,23 @@
 
 [Open the standalone HTML diagram](assets/transitops-architecture.html)
 
-This is the accepted target design, not a claim about deployed services. Stage 1 must measure the lightweight Airflow topology and update any component or resource assumption that the spike disproves.
+This is the target design, not a claim about deployed services. A corrected Airflow 3.3.1 standalone run peaked at 756 MiB while swap increased across all three 30-second samples. The safety stop invalidated Airflow as a production service on this VPS. It did not invalidate Airflow as a Dockerized learning artifact.
 
 A separate SQLite control-plane database stores incidents, acknowledgements, approved demo actions, outcomes, and post-action health checks.
+
+## Scheduler and data trust boundary
+
+Production and demo runs share the same idempotent pipeline commands but use different schedulers, inputs, state, and output paths.
+
+```text
+Production on the VPS
+cron -> shared pipeline commands -> real VBB data -> production storage
+
+Learning demo in Docker
+Airflow DAG -> shared pipeline commands -> synthetic fixtures -> demo storage
+```
+
+Cron is the production scheduler for the bounded VBB collection campaign. Dockerized Airflow DAGs teach dependencies, retries, failure handling, dbt quality gates, and test-gated DuckDB publication without collecting or modifying production data. Demo runs use an isolated namespace and synthetic fixtures by default. Logs, status rows, dashboard labels, and stage evidence must identify the scheduler, data origin, and namespace so a synthetic Airflow run cannot be presented as proof of real collection.
 
 ## Analytical data model boundaries
 
@@ -20,7 +34,7 @@ Metrics are calculated deterministically by dbt and DuckDB. The RAG assistant do
 
 ## Optional diagnostic source
 
-Stage 1 will compare a small sample from [`v6.vbb.transport.rest`](https://v6.vbb.transport.rest/) with official GTFS-Realtime. This community-operated HAFAS wrapper is outside the primary collection path and therefore absent from the core diagram. It may be accepted later for bounded, on-demand incident enrichment only if identifier mapping, added disruption value, reliability, and data-use terms are adequate. Its health never changes official collection-slot success, and it is not an automatic fallback.
+Stage 1 compared a small sample from [`v6.vbb.transport.rest`](https://v6.vbb.transport.rest/) with official GTFS-Realtime and retained it as diagnostics-only. This community-operated HAFAS wrapper is outside the primary collection path and therefore absent from the core diagram. It may be reconsidered later for bounded, on-demand incident enrichment only if identifier mapping, added disruption value, reliability, and data-use terms are adequate. Its health never changes official collection-slot success, and it is not an automatic fallback.
 
 ## Versioned publication
 
@@ -30,7 +44,7 @@ Stage 1 will compare a small sample from [`v6.vbb.transport.rest`](https://v6.vb
 4. An independent process reopens it read-only and checks the expected marts.
 5. Failed candidates never replace the current healthy release.
 6. A temporary manifest is written beside the current manifest and replaced atomically on the same filesystem.
-7. Streamlit opens the manifest’s verified release read-only.
+7. Streamlit opens the manifest's verified release read-only.
 8. Current and previous releases are retained; cleanup waits until older releases have no active readers.
 
 This avoids unsafe concurrent writes and provides simple rollback and publication-age measurement.

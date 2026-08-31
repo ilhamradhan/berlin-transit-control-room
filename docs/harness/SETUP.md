@@ -1,6 +1,6 @@
 # Setup baseline
 
-**Status:** design baseline; commands and exact image versions will be finalized and verified in Stage 1.
+**Status:** Stage 1 passed. Airflow 3.3.1 standalone was invalidated as a production service on this host; cron production-readiness checks and independent review pass.
 
 ## Host constraints measured during requirements work
 
@@ -14,31 +14,26 @@
 
 At inspection, existing containers used approximately 597 MiB combined, the Docker daemon approximately 145 MiB, and Hermes server/gateway processes approximately 760 MiB. These values are transient measurements, not permanent requirements.
 
-The [official Airflow Docker guide](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/) recommends at least 4 GB available to Docker and ideally 8 GB for its example stack. The host is below that recommendation. TransitOps Berlin therefore starts with a measured lightweight spike rather than copying the example Compose topology.
+The [official Airflow Docker guide](https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/) recommends at least 4 GB available to Docker and ideally 8 GB for its example stack. The host is below that recommendation. In the corrected Airflow 3.3.1 standalone run, container memory peaked at 756 MiB and swap increased across all three 30-second samples. The safety stop fired at 60 seconds before a scheduler-executed DAG or five-minute observation completed. Existing services remained unchanged and cleanup passed, but no Airflow topology is approved for this host.
 
-## Stage 1 setup goals
+## Accepted scheduler environment
 
-- Pin runtime and container versions.
-- Use a slim Airflow image with only required providers.
-- Use PostgreSQL for Airflow metadata.
-- Use LocalExecutor with low measured parallelism.
-- Run only required Airflow components.
-- Apply explicit resource limits after measuring startup behavior.
-- Verify one sample DAG under idle and active load.
-- Run a bounded comparison of three representative stops through `v6.vbb.transport.rest`; do not crawl or archive the network.
-- Fall back to Airflow standalone only if the production-shaped topology is unstable, and label standalone accurately as a learning/development deployment.
+- Production collection uses the host's active cron service and `/usr/bin/python3` 3.12.3.
+- Cron calls shared idempotent pipeline commands under an exclusive non-blocking lock.
+- Dockerized Airflow is deferred to the Stage 2 synthetic demo and cannot access production inputs, state, or output paths.
+- No Airflow image, metadata database, executor, port, or production service is required on this VPS.
+- Do not retry Airflow feasibility on this VPS.
 
 ## Non-destructive preflight
 
-The planned startup preflight reports:
+The Stage 1 smoke preflight reports and checks:
 
-- Available memory and swap pressure
+- Available memory
 - Available project disk space
-- Required port conflicts
-- Required directories and permissions
-- Configuration presence without printing secret values
+- Exclusive-lock availability
+- Response size, non-empty body, and protobuf media type
 
-It refuses unsafe startup with actionable instructions. It never stops unrelated containers or services. The memory threshold will come from the Stage 1 spike, not an invented constant.
+It refuses the smoke run below 512 MiB available memory, below the 4 GiB collection-cap floor, or while another run holds the lock. It never stops unrelated containers or services and prints no payload or secret value.
 
 ## Planned local directories
 
@@ -69,8 +64,8 @@ Secrets will be supplied through ignored environment/configuration mechanisms. N
 Stage 1 is accepted only when:
 
 1. Existing services remain healthy.
-2. The reduced Airflow topology starts without restart loops or unsafe swap growth.
-3. A sample DAG succeeds.
+2. A cron-triggered real-source smoke run succeeds without overlap.
+3. The smoke command remains within measured memory, swap, and disk limits.
 4. Idle and active memory are recorded.
 5. Source responses and contracts are validated from real samples.
 6. The measured storage pilot procedure is ready.

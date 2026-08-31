@@ -35,6 +35,8 @@ This file summarizes accepted decisions from the requirements grill. Detailed im
 | D-029 | Spike `v6.vbb.transport.rest` as an optional diagnostic source | It may add current disruption context, but it will not replace official GTFS sources, count toward collection-slot success, or become an automatic fallback. Identifier mapping and data-use terms must pass a bounded Stage 1 check. |
 | D-030 | Use Ponytail at full as the implementation guardrail | Every coding task starts with the existing plugin loaded. Prefer deletion, reuse, standard-library and native features, and the shortest verified implementation without weakening validation, security, or explicit requirements. |
 | D-031 | Use a project-scoped Hermes Kanban board | Durable tasks, dependencies, worktrees, and human blocks fit the phase-gated workflow. Curated stage records remain the public evidence; local board rows do not replace them. |
+| D-032 | Invalidate Airflow 3.3.1 standalone on the current VPS | A corrected run peaked at 756 MiB while swap increased across all three 30-second samples. The safety stop ruled out Airflow as a production service on this host. |
+| D-033 | Use cron for real collection and Dockerized Airflow for the synthetic learning demo | Both paths call shared idempotent pipeline commands. [`ARCHITECTURE.md`](ARCHITECTURE.md#scheduler-and-data-trust-boundary) defines the single canonical trust boundary. |
 
 ## Rejected or deferred alternatives
 

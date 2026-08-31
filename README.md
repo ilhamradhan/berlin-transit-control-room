@@ -2,11 +2,11 @@
 
 > A learning project about data engineering and working effectively with an AI coding agent.
 
-**Current state:** the design is documented, but the pipeline and app do not exist yet.
+**Current state:** Stage 1 is complete, but the production pipeline and app do not exist yet.
 
 I am building TransitOps Berlin to learn two things together:
 
-1. how to build a small data platform with Airflow, dbt, DuckDB, Parquet, and Streamlit;
+1. how to build a small data platform with cron, Airflow demos, dbt, DuckDB, Parquet, and Streamlit;
 2. how to direct an AI agent with clear constraints, phase gates, selected skills, and checks that prove the work is correct.
 
 The dataset comes from VBB, Berlin-Brandenburg's public transport authority. The planned pipeline samples static GTFS and GTFS-Realtime data for Berlin U-Bahn, S-Bahn, and tram services. The app will show both transit reliability and the health of the pipeline that produced those numbers.
@@ -15,7 +15,7 @@ The dataset comes from VBB, Berlin-Brandenburg's public transport authority. The
 
 The planned app will have four pages:
 
-- **Control Room:** source freshness, collection coverage, Airflow and dbt runs, test results, incidents, and the age of the current data release.
+- **Control Room:** source freshness, collection coverage, scheduler and dbt runs, test results, incidents, and the age of the current data release.
 - **Incident Detail:** evidence for a failure, the relevant runbook, one approved demo control, and a post-action health check.
 - **Transit Reliability:** predicted-delay and coverage metrics by route, mode, stop, and time.
 - **System Documentation:** architecture, source contracts, metric definitions, limitations, and runbooks.
@@ -41,7 +41,8 @@ These are samples of realtime predictions, not measured passenger arrival times.
 
 | Job | Tool |
 |---|---|
-| Scheduling | Apache Airflow |
+| Real-data scheduling | cron |
+| Synthetic orchestration demo | Apache Airflow in Docker |
 | SQL models and tests | dbt Core |
 | Files and analytics | Parquet and DuckDB |
 | Incident state | SQLite |
