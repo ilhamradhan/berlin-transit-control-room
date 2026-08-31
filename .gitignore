@@ -47,4 +47,5 @@ rag/index/
 .vscode/
 .idea/
 .hermes.md
+.hermes/
 .worktrees/
