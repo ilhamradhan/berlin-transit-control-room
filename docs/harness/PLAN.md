@@ -37,6 +37,8 @@
 
 ## Stage 2: Ingestion and storage
 
+**Status:** implementation and 24-hour storage pilot passed; 14-day campaign in progress.
+
 **Deliverables**
 
 - Fifteen-minute realtime cron job

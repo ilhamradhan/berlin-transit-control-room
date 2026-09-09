@@ -1,0 +1,19 @@
+services:
+  airflow-demo:
+    build:
+      context: .
+      dockerfile: airflow/Dockerfile
+    image: apache/airflow:3.3.1
+
+    volumes:
+      - demo-data:/demo-data
+      - ./airflow/dags:/opt/airflow/dags:ro
+      - ./tests/fixtures:/opt/airflow/fixtures:ro
+      - ./scripts:/opt/airflow/scripts:ro
+    environment:
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+    command: standalone
+
+volumes:
+  demo-data:
