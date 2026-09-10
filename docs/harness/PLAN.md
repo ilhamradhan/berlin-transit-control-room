@@ -39,6 +39,12 @@
 
 **Status:** implementation and 24-hour storage pilot passed; 14-day campaign in progress.
 
+**Kanban gate:** `transitops-berlin/t_f9a2fd9e` tracks Stage 2 closure and remains
+blocked until the campaign reaches its acceptance window. Stage 3 planning is
+`t_95a49a58`, dependent on that closure card. Do not create Stage 3
+implementation cards until the Stage 3 plan is documented in `docs/harness/`
+and approved.
+
 **Deliverables**
 
 - Fifteen-minute realtime cron job
