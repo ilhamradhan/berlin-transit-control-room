@@ -368,11 +368,15 @@ inflate attempted slots, successful slots, or entity completeness.
 
 ### Campaign status
 
-The 24-hour storage pilot passed, but the plan's minimum usable campaign
-requires 14 elapsed days at 90% successful slot coverage. Cron was resumed on
-`2026-09-09T09:16:35Z` from the corrected absolute-runtime installer. The first
-resumed slot succeeded with `133,504` normalized rows. Continue collection for
-13 more elapsed days unless the 4 GiB collection-file cap pauses it first.
+The 24-hour storage pilot passed. This run targets seven elapsed days as a
+bounded practical dataset because the current VPS storage budget cannot safely
+support the full 14-day campaign. The original 14-day/90% criterion remains
+unmet and is not being silently redefined.
+
+Cron was resumed on `2026-09-09T09:16:35Z` from the corrected absolute-runtime
+installer. The first resumed slot succeeded with `133,504` normalized rows.
+The seven-day checkpoint is `2026-09-16T09:16:35Z`; stop collection there and
+record the final metrics.
 
 ### Gate disposition
 
