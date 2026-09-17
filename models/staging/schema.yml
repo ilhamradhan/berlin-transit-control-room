@@ -1,0 +1,56 @@
+version: 2
+
+models:
+  - name: stg_observations
+    description: Typed staging view of canonical synthetic observations.
+    columns:
+      - name: slot_utc
+        tests: [not_null]
+      - name: feed_timestamp_utc
+        tests: [not_null]
+      - name: entity_id
+        tests: [not_null]
+      - name: trip_id
+        tests: [not_null]
+      - name: route_id
+        tests: [not_null]
+      - name: stop_id
+        tests: [not_null]
+      - name: stop_sequence
+        tests: [not_null]
+      - name: event_kind
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [arrival, departure]
+      - name: schedule_relationship
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [SCHEDULED]
+      - name: mode
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [rail, subway, tram]
+      - name: scheduler
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [airflow]
+      - name: data_origin
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [synthetic]
+      - name: namespace
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [demo]
