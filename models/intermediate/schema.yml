@@ -1,0 +1,42 @@
+version: 2
+
+models:
+  - name: int_reliability_observations
+    description: Deterministic observation-level reliability classifications.
+    columns:
+      - name: entity_id
+        tests: [not_null]
+      - name: slot_utc
+        tests: [not_null]
+      - name: delay_seconds
+        tests: [not_null]
+      - name: schedule_relationship
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [SCHEDULED]
+      - name: is_on_time
+        tests: [not_null]
+      - name: is_severe_delay
+        tests: [not_null]
+
+  - name: mart_reliability
+    description: Aggregate reliability and collection coverage metrics.
+    columns:
+      - name: observation_count
+        tests: [not_null]
+      - name: entity_count
+        tests: [not_null]
+      - name: slot_count
+        tests: [not_null]
+      - name: covered_slot_count
+        tests: [not_null]
+      - name: slot_coverage_rate
+        tests: [not_null]
+      - name: on_time_rate
+        tests: [not_null]
+      - name: severe_delay_rate
+        tests: [not_null]
+      - name: schedule_match_rate
+        tests: [not_null]
