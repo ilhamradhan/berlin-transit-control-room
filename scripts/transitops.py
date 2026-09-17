@@ -236,6 +236,11 @@ def _utc_iso(timestamp):
     return datetime.fromtimestamp(timestamp, timezone.utc).isoformat()
 
 
+def _restore_raw_snapshot(data_root, relative_target, payload):
+    restore_cap = regular_file_bytes(Path(data_root).resolve(strict=True)) + len(payload) + 1
+    guarded_atomic_write(data_root, relative_target, [payload], _cap_bytes=restore_cap)
+
+
 def collect_realtime_slot(data_root, state_root, url, *, slot, static_lookup, now=None, scheduler="cron", data_origin="real", namespace="production", _cap_bytes=PRODUCTION_CAP_BYTES, _timeout=30):
     slot = validate_slot(slot)
     validate_trust_boundary(scheduler, data_origin, namespace)
@@ -304,8 +309,12 @@ def collect_realtime_slot(data_root, state_root, url, *, slot, static_lookup, no
     payload_digest = hashlib.sha256(payload).hexdigest()
     digest_file = state / "realtime" / "last_payload.sha256"
     previous_digest = digest_file.read_text().strip() if digest_file.is_file() else None
-    guarded_atomic_write(data, raw_relative, [payload], _cap_bytes=_cap_bytes)
+    raw_path = _safe_target(data, raw_relative)
+    previous_raw = raw_path.read_bytes() if raw_path.is_file() else None
+    raw_written = False
     try:
+        guarded_atomic_write(data, raw_relative, [payload], _cap_bytes=_cap_bytes)
+        raw_written = True
         result = write_realtime_slot(
             data,
             payload,
@@ -314,15 +323,43 @@ def collect_realtime_slot(data_root, state_root, url, *, slot, static_lookup, no
             now=now,
             _cap_bytes=_cap_bytes,
         )
+    except StorageCapExceeded as error:
+        if raw_written:
+            if previous_raw is None:
+                raw_path.unlink(missing_ok=True)
+            else:
+                _restore_raw_snapshot(data, raw_relative, previous_raw)
+        result = {
+            "status": "failed",
+            "failure_kind": "storage_cap",
+            "error": str(error),
+            "scheduler": scheduler,
+            "data_origin": data_origin,
+            "namespace": namespace,
+        }
+        run_root = state / "runs" / namespace / "realtime"
+        run_root.mkdir(parents=True, exist_ok=True)
+        guarded_atomic_write(
+            run_root,
+            Path(f"{slot.astimezone(timezone.utc):%Y-%m-%dT%H-%M}.json"),
+            [json.dumps(result, sort_keys=True).encode()],
+        )
+        return result
     except ValueError as error:
+        raw_path = data / raw_relative
+        if previous_raw is None:
+            raw_path.unlink(missing_ok=True)
+        else:
+            _restore_raw_snapshot(data, raw_relative, previous_raw)
         quarantine_relative = Path(
             f"quarantine/realtime/{slot.astimezone(timezone.utc).date().isoformat()}/"
             f"{slot.astimezone(timezone.utc):%H-%M}.pb"
         )
-        guarded_atomic_write(data, quarantine_relative, [payload], _cap_bytes=_cap_bytes)
-        raw_path = data / raw_relative
-        if raw_path.exists():
-            raw_path.unlink()
+        quarantine_error = None
+        try:
+            guarded_atomic_write(data, quarantine_relative, [payload], _cap_bytes=_cap_bytes)
+        except StorageCapExceeded as quarantine_failure:
+            quarantine_error = str(quarantine_failure)
         failure_kind = "stale" if "older" in str(error) or "future" in str(error) else "parse"
         result = {
             "status": "failed",
@@ -334,6 +371,8 @@ def collect_realtime_slot(data_root, state_root, url, *, slot, static_lookup, no
             "raw_path": str(raw_relative),
             "quarantine_path": str(quarantine_relative),
         }
+        if quarantine_error:
+            result["quarantine_error"] = quarantine_error
         run_root = state / "runs" / namespace / "realtime"
         run_root.mkdir(parents=True, exist_ok=True)
         guarded_atomic_write(

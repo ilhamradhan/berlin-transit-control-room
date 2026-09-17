@@ -574,6 +574,101 @@ class RealtimeFeedTest(unittest.TestCase):
             self.assertEqual(result["status"], "failed")
             self.assertEqual(result["failure_kind"], "size")
 
+    def test_storage_cap_failure_writes_failed_run_record(self):
+        payload = (ROOT / "tests" / "fixtures" / "realtime.pb").read_bytes()
+        with tempfile.TemporaryDirectory() as directory, self.serve(payload) as url:
+            data = Path(directory) / "data"
+            state = Path(directory) / "state"
+            data.mkdir()
+            state.mkdir()
+            result = transitops.collect_realtime_slot(
+                data, state, url,
+                slot=datetime(2026, 9, 2, 12, tzinfo=timezone.utc),
+                static_lookup={"trip-1": {"route_id": "route-1", "mode": "tram"}},
+                _cap_bytes=len(payload) + 1,
+            )
+            self.assertEqual(result["status"], "failed")
+            self.assertEqual(result["failure_kind"], "storage_cap")
+            self.assertFalse(list((data / "raw").rglob("*.pb")))
+
+    def test_initial_raw_cap_failure_preserves_existing_payload(self):
+        payload = (ROOT / "tests" / "fixtures" / "realtime.pb").read_bytes()
+        with tempfile.TemporaryDirectory() as directory, self.serve(payload) as url:
+            data = Path(directory) / "data"
+            state = Path(directory) / "state"
+            raw = data / "raw" / "realtime" / "2026-09-02" / "12-00.pb"
+            raw.parent.mkdir(parents=True)
+            raw.write_bytes(b"existing")
+            data.mkdir(exist_ok=True)
+            state.mkdir()
+            result = transitops.collect_realtime_slot(
+                data, state, url,
+                slot=datetime(2026, 9, 2, 12, tzinfo=timezone.utc),
+                static_lookup={"trip-1": {"route_id": "route-1", "mode": "tram"}},
+                _cap_bytes=len(payload) - 1,
+            )
+            self.assertEqual(result["failure_kind"], "storage_cap")
+            self.assertEqual(raw.read_bytes(), b"existing")
+
+    def test_parquet_cap_failure_restores_replaced_raw_payload(self):
+        payload = (ROOT / "tests" / "fixtures" / "realtime.pb").read_bytes()
+        with tempfile.TemporaryDirectory() as directory, self.serve(payload) as url:
+            data = Path(directory) / "data"
+            state = Path(directory) / "state"
+            raw = data / "raw" / "realtime" / "2026-09-02" / "12-00.pb"
+            raw.parent.mkdir(parents=True)
+            raw.write_bytes(b"existing")
+            state.mkdir()
+            result = transitops.collect_realtime_slot(
+                data, state, url,
+                slot=datetime(2026, 9, 2, 12, tzinfo=timezone.utc),
+                static_lookup={"trip-1": {"route_id": "route-1", "mode": "tram"}},
+                _cap_bytes=len(payload) + len(b"existing"),
+            )
+            self.assertEqual(result["failure_kind"], "storage_cap")
+            self.assertEqual(raw.read_bytes(), b"existing")
+            record = state / "runs" / "production" / "realtime" / "2026-09-02T12-00.json"
+            self.assertEqual(json.loads(record.read_text())["failure_kind"], "storage_cap")
+
+    def test_stale_failure_restores_replaced_raw_payload(self):
+        payload = (ROOT / "tests" / "fixtures" / "realtime.pb").read_bytes()
+        with tempfile.TemporaryDirectory() as directory, self.serve(payload) as url:
+            data = Path(directory) / "data"
+            state = Path(directory) / "state"
+            raw = data / "raw" / "realtime" / "2026-09-02" / "12-00.pb"
+            raw.parent.mkdir(parents=True)
+            raw.write_bytes(b"existing" * 20)
+            state.mkdir()
+            result = transitops.collect_realtime_slot(
+                data, state, url,
+                slot=datetime(2026, 9, 2, 12, tzinfo=timezone.utc),
+                now=datetime(2026, 9, 2, 12, 16, tzinfo=timezone.utc),
+                static_lookup={"trip-1": {"route_id": "route-1", "mode": "tram"}},
+                _cap_bytes=len(payload) + 1,
+            )
+            self.assertEqual(result["failure_kind"], "stale")
+            self.assertEqual(raw.read_bytes(), b"existing" * 20)
+
+    def test_quarantine_cap_failure_still_records_stale_failure(self):
+        payload = (ROOT / "tests" / "fixtures" / "realtime.pb").read_bytes()
+        with tempfile.TemporaryDirectory() as directory, self.serve(payload) as url:
+            data = Path(directory) / "data"
+            state = Path(directory) / "state"
+            raw = data / "raw" / "realtime" / "2026-09-02" / "12-00.pb"
+            raw.parent.mkdir(parents=True)
+            raw.write_bytes(b"existing")
+            state.mkdir()
+            result = transitops.collect_realtime_slot(
+                data, state, url,
+                slot=datetime(2026, 9, 2, 12, tzinfo=timezone.utc),
+                now=datetime(2026, 9, 2, 12, 16, tzinfo=timezone.utc),
+                static_lookup={"trip-1": {"route_id": "route-1", "mode": "tram"}},
+                _cap_bytes=len(payload) + len(b"existing") - 1,
+            )
+            self.assertEqual(result["failure_kind"], "stale")
+            self.assertIn("quarantine_error", result)
+            self.assertEqual(raw.read_bytes(), b"existing")
+
     def test_collector_rejects_stale_feed_before_parquet_write(self):
         payload = (ROOT / "tests" / "fixtures" / "realtime.pb").read_bytes()
         with tempfile.TemporaryDirectory() as directory, self.serve(payload) as url:
