@@ -29,14 +29,15 @@ logs/
 data/
 warehouse/releases/
 warehouse/current.json
-state/*.sqlite*
-state/*.lock
+state/
 *.duckdb
 *.duckdb.*
 *.parquet
 *.pb
 *.pbf
 *.zip
+!tests/fixtures/static.zip
+!tests/fixtures/realtime.pb
 
 # RAG models and indexes
 models/embeddings/

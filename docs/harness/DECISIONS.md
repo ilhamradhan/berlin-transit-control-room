@@ -11,7 +11,7 @@ This file summarizes accepted decisions from the requirements grill. Detailed im
 | D-005 | Scope modes to U-Bahn, S-Bahn, and tram | Keeps the first data model and dashboard focused. |
 | D-006 | Collect every 15 minutes | Reduces snapshots by two-thirds versus five-minute collection while retaining route-level analytical value. |
 | D-007 | Stop after 28 calendar days or 4 GB of collection files | The cap covers raw, quarantine, static, and Parquet files and prevents indefinite growth. |
-| D-008 | Require 14 days and 90% slot coverage | Provides a meaningful bounded campaign with an explicit quality gate. |
+| D-008 | Original baseline: require 14 days and 90% slot coverage | Historical baseline superseded by D-034 after measured storage evidence. |
 | D-009 | Retain raw and quarantined payloads for 48 hours | Supports recent debugging without preserving raw source files indefinitely. |
 | D-010 | Check static GTFS daily and retain referenced versions | Historical observations remain reproducible without storing unchanged duplicate downloads. |
 | D-011 | Use local Parquet and DuckDB first | Preserves the learning stack and avoids premature cloud complexity. |
@@ -37,6 +37,7 @@ This file summarizes accepted decisions from the requirements grill. Detailed im
 | D-031 | Use a project-scoped Hermes Kanban board | Durable tasks, dependencies, worktrees, and human blocks fit the phase-gated workflow. Curated stage records remain the public evidence; local board rows do not replace them. |
 | D-032 | Invalidate Airflow 3.3.1 standalone on the current VPS | A corrected run peaked at 756 MiB while swap increased across all three 30-second samples. The safety stop ruled out Airflow as a production service on this host. |
 | D-033 | Use cron for real collection and Dockerized Airflow for the synthetic learning demo | Both paths call shared idempotent pipeline commands. [`ARCHITECTURE.md`](ARCHITECTURE.md#scheduler-and-data-trust-boundary) defines the single canonical trust boundary. |
+| D-034 | Use a seven-day minimum campaign with 90% slot coverage | Measured local storage approached the 4 GiB hard cap before 14 days; seven days preserves a bounded, useful dataset without pretending the original target was met. |
 
 ## Rejected or deferred alternatives
 
