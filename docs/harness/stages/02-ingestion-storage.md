@@ -373,19 +373,26 @@ bounded practical dataset because the current VPS storage budget cannot safely
 support the full 14-day campaign. The original 14-day/90% criterion remains
 unmet and is not being silently redefined.
 
-Cron was resumed on `2026-09-09T09:16:35Z` from the corrected absolute-runtime
-installer. The first resumed slot succeeded with `133,504` normalized rows.
-The seven-day checkpoint is `2026-09-16T09:16:35Z`; stop collection there and
-record the final metrics.
+The seven-day practical campaign ran from `2026-09-09T09:16:35Z` through
+`2026-09-16T09:16:35Z`. Final filtered metrics were:
+
+- 672 expected slots; 660 attempted; 630 successful; 30 stale
+- slot coverage: `0.9375` (93.75%)
+- entity completeness: `78,716,342` normalized rows
+- counted collection storage at stop: `4,293,152,136` bytes
+- latest successful snapshot in the window: `171,127` rows
+- modes remained `rail`, `subway`, `tram`; null modes: `0`
+- cron marker was removed at the seven-day checkpoint
+
+The 14-day/90% formal criterion remains unmet. The seven-day result is
+accepted only as a bounded practical dataset and must not be presented as full
+campaign acceptance.
 
 ### Gate disposition
 
-Implementation and storage-pilot evidence are complete. Stage 2 remains open
-until the 14-day campaign reaches its acceptance window and the final
-correctness/security/complexity review is recorded. No runtime data or state is
-eligible for Git.
-
-No commit or push has occurred.
+Implementation, storage-pilot, and bounded seven-day evidence are complete.
+The formal Stage 2 gate remains open because the 14-day campaign criterion was
+not met. No runtime data or state is eligible for Git.
 
 
 ## Task 6 checkpoint: coverage and storage metrics

@@ -37,7 +37,7 @@
 
 ## Stage 2: Ingestion and storage
 
-**Status:** implementation and 24-hour storage pilot passed; 7-day practical campaign in progress.
+**Status:** implementation and 24-hour storage pilot passed; 7-day practical campaign complete; formal 14-day criterion unmet.
 
 **Campaign deviation:** this run is intentionally targeting seven elapsed days
 because the current VPS storage budget cannot safely support the full 14-day
