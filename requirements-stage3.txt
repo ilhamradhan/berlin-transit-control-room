@@ -1,0 +1,4 @@
+# Stage 3 transformation dependencies
+# Direct dependencies only; transitive versions are resolved by pip.
+dbt-duckdb==1.11.0
+duckdb==1.5.5
