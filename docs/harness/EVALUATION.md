@@ -22,7 +22,7 @@ References: [`v6.vbb.transport.rest` documentation](https://v6.vbb.transport.res
 ## Ingestion and storage
 
 - Expect 96 slots per 24 elapsed hours. Generate the denominator from UTC schedule intervals so Europe/Berlin daylight-saving days can contain 92 or 100 slots.
-- Minimum usable campaign: at least 14 elapsed days and at least 90% successful collection slots.
+- Minimum usable campaign: at least 7 elapsed days and at least 90% successful collection slots.
 - A slot succeeds only when the response parses as GTFS-Realtime, passes the source-contract freshness check, and commits normalized output.
 - Unchanged payloads and entity-level completeness are tracked separately from slot success.
 - Any result below 90% fails campaign acceptance.

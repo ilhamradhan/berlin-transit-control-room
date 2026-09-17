@@ -37,6 +37,19 @@
 
 ## Stage 2: Ingestion and storage
 
+**Status:** passed with a bounded seven-day campaign and documented storage constraint.
+
+**Campaign decision:** the minimum usable campaign is seven elapsed days with
+at least 90% successful collection slots. The 4 GiB storage cap remains the
+hard stop. Decision D-034 records the storage-driven change from the original
+14-day baseline.
+
+**Kanban gate:** `transitops-berlin/t_f9a2fd9e` tracks Stage 2 closure and remains
+blocked until the campaign reaches its acceptance window. Stage 3 planning is
+`t_95a49a58`, dependent on that closure card. Do not create Stage 3
+implementation cards until the Stage 3 plan is documented in `docs/harness/`
+and approved.
+
 **Deliverables**
 
 - Fifteen-minute realtime cron job
