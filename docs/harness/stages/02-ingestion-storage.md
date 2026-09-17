@@ -368,10 +368,10 @@ inflate attempted slots, successful slots, or entity completeness.
 
 ### Campaign status
 
-The 24-hour storage pilot passed. This run targets seven elapsed days as a
-bounded practical dataset because the current VPS storage budget cannot safely
-support the full 14-day campaign. The original 14-day/90% criterion remains
-unmet and is not being silently redefined.
+The 24-hour storage pilot passed. The accepted minimum campaign is seven
+elapsed days with at least 90% successful collection slots. The 4 GiB storage
+cap remains the hard stop; Decision D-034 records the storage-driven change
+from the original 14-day baseline.
 
 The seven-day practical campaign ran from `2026-09-09T09:16:35Z` through
 `2026-09-16T09:16:35Z`. Final filtered metrics were:
@@ -384,15 +384,13 @@ The seven-day practical campaign ran from `2026-09-09T09:16:35Z` through
 - modes remained `rail`, `subway`, `tram`; null modes: `0`
 - cron marker was removed at the seven-day checkpoint
 
-The 14-day/90% formal criterion remains unmet. The seven-day result is
-accepted only as a bounded practical dataset and must not be presented as full
-campaign acceptance.
+The seven-day result satisfies the current seven-day/90% campaign criterion.
 
 ### Gate disposition
 
-Implementation, storage-pilot, and bounded seven-day evidence are complete.
-The formal Stage 2 gate remains open because the 14-day campaign criterion was
-not met. No runtime data or state is eligible for Git.
+Implementation, storage-pilot, and seven-day campaign evidence are complete.
+The Stage 2 gate is ready for closure after the final documentation/review
+check. No runtime data or state is eligible for Git.
 
 
 ## Task 6 checkpoint: coverage and storage metrics

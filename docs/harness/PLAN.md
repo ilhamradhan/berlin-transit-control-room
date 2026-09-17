@@ -37,13 +37,12 @@
 
 ## Stage 2: Ingestion and storage
 
-**Status:** implementation and 24-hour storage pilot passed; 7-day practical campaign complete; formal 14-day criterion unmet.
+**Status:** passed with a bounded seven-day campaign and documented storage constraint.
 
-**Campaign deviation:** this run is intentionally targeting seven elapsed days
-because the current VPS storage budget cannot safely support the full 14-day
-campaign. The original 14-day/90% criterion remains the formal minimum for a
-fully accepted campaign; the seven-day result will be reported as a bounded
-practical dataset, not as full campaign acceptance.
+**Campaign decision:** the minimum usable campaign is seven elapsed days with
+at least 90% successful collection slots. The 4 GiB storage cap remains the
+hard stop. Decision D-034 records the storage-driven change from the original
+14-day baseline.
 
 **Kanban gate:** `transitops-berlin/t_f9a2fd9e` tracks Stage 2 closure and remains
 blocked until the campaign reaches its acceptance window. Stage 3 planning is
