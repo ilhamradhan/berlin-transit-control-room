@@ -1,0 +1,21 @@
+select
+    cast(slot_utc as timestamp) as slot_utc,
+    cast(feed_timestamp_utc as timestamp) as feed_timestamp_utc,
+    cast(static_version as varchar) as static_version,
+    cast(entity_id as varchar) as entity_id,
+    cast(trip_id as varchar) as trip_id,
+    cast(route_id as varchar) as route_id,
+    cast(start_date as varchar) as start_date,
+    cast(start_time as time) as start_time,
+    cast(stop_id as varchar) as stop_id,
+    cast(stop_sequence as integer) as stop_sequence,
+    cast(event_kind as varchar) as event_kind,
+    cast(scheduled_event_utc as timestamp) as scheduled_event_utc,
+    cast(predicted_event_utc as timestamp) as predicted_event_utc,
+    cast(delay_seconds as integer) as delay_seconds,
+    cast(schedule_relationship as varchar) as schedule_relationship,
+    cast(mode as varchar) as mode,
+    cast(scheduler as varchar) as scheduler,
+    cast(data_origin as varchar) as data_origin,
+    cast(namespace as varchar) as namespace
+from {{ source('synthetic', 'observations') }}

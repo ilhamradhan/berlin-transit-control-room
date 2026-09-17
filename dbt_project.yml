@@ -1,0 +1,22 @@
+name: transitops
+version: "1.0"
+config-version: 2
+
+profile: transitops
+model-paths: [models]
+seed-paths: [tests/fixtures]
+target-path: target
+clean-targets:
+  - target
+  - dbt_packages
+
+seeds:
+  transitops:
+    stage3_observations:
+      alias: observations
+
+models:
+  transitops:
+    staging:
+      +schema: staging
+      +materialized: table
