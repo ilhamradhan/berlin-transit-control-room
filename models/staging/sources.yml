@@ -1,0 +1,47 @@
+version: 2
+
+sources:
+  - name: synthetic
+    schema: main
+    tables:
+      - name: observations
+        description: Canonical sanitized observation fixture for the isolated demo.
+        columns:
+          - name: slot_utc
+            tests: [not_null]
+          - name: feed_timestamp_utc
+            tests: [not_null]
+          - name: static_version
+            tests: [not_null]
+          - name: entity_id
+            tests: [not_null]
+          - name: trip_id
+            tests: [not_null]
+          - name: route_id
+            tests: [not_null]
+          - name: stop_id
+            tests: [not_null]
+          - name: mode
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: [rail, subway, tram]
+          - name: scheduler
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: [airflow]
+          - name: data_origin
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: [synthetic]
+          - name: namespace
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: [demo]
