@@ -24,6 +24,7 @@ airflow/standalone_admin_password.txt
 dbt_packages/
 target/
 logs/
+.user.yml
 
 # Collected and generated data
 data/

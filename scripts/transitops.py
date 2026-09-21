@@ -7,11 +7,15 @@ import io
 import json
 import os
 import re
+import selectors
 import shutil
 import signal
 import stat
+import subprocess
 import sys
 import tempfile
+import time
+import uuid
 import urllib.error
 import urllib.request
 import zipfile
@@ -20,6 +24,7 @@ from google.transit import gtfs_realtime_pb2
 from google.protobuf.message import DecodeError
 import pyarrow
 import pyarrow.parquet
+import duckdb
 
 
 PRODUCTION_CAP_BYTES = 4 * 1024**3
@@ -174,8 +179,37 @@ def load_static_trip_lookup(extracted_root):
                     "mode": mode,
                     "start_date": row.get("start_date") or None,
                     "start_time": row.get("start_time") or None,
+                    "stop_times": {},
+                }
+    stop_times_path = Path(extracted_root) / "stop_times.txt"
+    if stop_times_path.is_file():
+        with stop_times_path.open(newline="", encoding="utf-8-sig") as stream:
+            for row in csv.DictReader(stream):
+                trip = lookup.get(row.get("trip_id"))
+                if trip is None:
+                    continue
+                key = (row.get("stop_id"), row.get("stop_sequence"))
+                trip["stop_times"][key] = {
+                    "arrival_time": row.get("arrival_time") or None,
+                    "departure_time": row.get("departure_time") or None,
                 }
     return lookup
+
+
+def _scheduled_event_utc(lookup, stop_update, event_kind, start_date):
+    stop_times = lookup.get("stop_times", {})
+    schedule = stop_times.get((stop_update.stop_id or None, str(stop_update.stop_sequence or "")))
+    value = schedule.get(f"{event_kind}_time") if schedule else None
+    if not value or not start_date:
+        return None
+    try:
+        date = datetime.strptime(start_date, "%Y%m%d").date()
+        hours, minutes, seconds = (int(part) for part in value.split(":"))
+        return datetime.combine(date, datetime.min.time(), timezone.utc) + timedelta(
+            hours=hours, minutes=minutes, seconds=seconds
+        )
+    except (TypeError, ValueError):
+        return None
 
 
 def normalize_realtime_feed(payload, *, slot, static_lookup, now=None):
@@ -218,10 +252,13 @@ def normalize_realtime_feed(payload, *, slot, static_lookup, now=None):
             for kind in ("arrival", "departure"):
                 event = base[kind]
                 if event.HasField("time"):
+                    scheduled = _scheduled_event_utc(
+                        lookup, stop_update, kind, update.trip.start_date or lookup.get("start_date")
+                    )
                     rows.append({
                         **{key: value for key, value in base.items() if key not in ("arrival", "departure")},
                         "event_kind": kind,
-                        "scheduled_event_utc": None,
+                        "scheduled_event_utc": scheduled.isoformat() if scheduled else None,
                         "predicted_event_utc": _utc_iso(event.time),
                         "delay_seconds": event.delay if event.HasField("delay") else None,
                     })
@@ -588,6 +625,25 @@ def validate_trust_boundary(scheduler, data_origin, namespace):
     return scheduler, data_origin, namespace
 
 
+def write_status_artifact(status_root, *, task, status, scheduler, data_origin, namespace):
+    validate_trust_boundary(scheduler, data_origin, namespace)
+    validate_namespace(task)
+    root = _validated_path(status_root, "status root")
+    root.mkdir(parents=True, exist_ok=True)
+    artifact = root / f"{task}.json"
+    payload = {
+        "data_origin": data_origin,
+        "namespace": namespace,
+        "scheduler": scheduler,
+        "status": status,
+        "task": task,
+    }
+    temporary = artifact.with_name(f".{artifact.name}.tmp")
+    temporary.write_text(json.dumps(payload, sort_keys=True) + "\n", encoding="utf-8")
+    os.replace(temporary, artifact)
+    return artifact
+
+
 REQUIRED_STATIC_FILES = {
     "agency.txt": {"agency_id", "agency_name", "agency_url", "agency_timezone"},
     "stops.txt": {"stop_id", "stop_name", "stop_lat", "stop_lon"},
@@ -598,6 +654,244 @@ REQUIRED_STATIC_FILES = {
 }
 SCOPED_ROUTE_TYPES = {"0", "1", "2", "109", "400", "900"}
 STATIC_RESPONSE_LIMIT = 512 * 1024**2
+
+
+class ReleaseBuildError(RuntimeError):
+    pass
+
+
+def _validated_path(value, label):
+    supplied = Path(value)
+    if ".." in supplied.parts:
+        raise ValueError(f"{label} may not contain traversal")
+    for parent in (supplied, *supplied.parents):
+        if parent.exists() and parent.is_symlink():
+            raise ValueError(f"{label} may not traverse symlinks")
+    return supplied.resolve()
+
+
+def publish_manifest(manifest_path, payload):
+    manifest = _validated_path(manifest_path, "manifest")
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    temporary = manifest.parent / f".{manifest.name}.{uuid.uuid4().hex}.tmp"
+    try:
+        guarded_atomic_write(
+            manifest.parent,
+            temporary.name,
+            [json.dumps(payload, sort_keys=True).encode()],
+        )
+        os.replace(temporary, manifest)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+@contextmanager
+def active_release_reader(active_readers_root, release_path):
+    readers = _validated_path(active_readers_root, "active readers root")
+    readers.mkdir(parents=True, exist_ok=True)
+    release = _validated_path(release_path, "active release")
+    releases = release.parent.parent
+    with _storage_lock(releases):
+        if (
+            not release.is_file()
+            or release.name != "transitops.duckdb"
+            or not release.parent.name.startswith("release-")
+        ):
+            raise ValueError("active reader must reference a verified release")
+        marker = readers / f"reader-{uuid.uuid4().hex}"
+        marker.write_text(str(release), encoding="utf-8")
+        try:
+            yield release
+        finally:
+            marker.unlink(missing_ok=True)
+
+
+def _retain_releases_unlocked(releases_root, manifest_path, *, active_readers_root=None):
+    releases = _validated_path(releases_root, "release root")
+    manifest = _validated_path(manifest_path, "manifest")
+    if not releases.is_dir() or not manifest.is_file():
+        return {"removed": 0}
+    current = Path(json.loads(manifest.read_text())["path"]).resolve()
+    if not current.is_relative_to(releases) or current.name != "transitops.duckdb":
+        raise ValueError("manifest release path must be inside the release root")
+    active = {current}
+    if active_readers_root:
+        readers = _validated_path(active_readers_root, "active readers root")
+        if readers.is_dir():
+            for marker in readers.iterdir():
+                if marker.is_file():
+                    try:
+                        candidate = Path(marker.read_text().strip()).resolve()
+                        if candidate.is_relative_to(releases):
+                            active.add(candidate)
+                    except (OSError, ValueError):
+                        continue
+    verified = [
+        path for path in releases.iterdir()
+        if path.is_dir() and path.name.startswith("release-")
+        and (path / "transitops.duckdb").is_file()
+    ]
+    verified.sort(key=lambda path: (path.stat().st_mtime_ns, path.name), reverse=True)
+    current_release = current.parent
+    previous = [path for path in verified if path != current_release][:1]
+    keep = active | {current} | {path / "transitops.duckdb" for path in previous}
+    victims = [path for path in verified if path / "transitops.duckdb" not in keep]
+    if not victims:
+        return {"removed": 0}
+    staging = releases / f".retention-{uuid.uuid4().hex}"
+    moved = []
+    try:
+        staging.mkdir()
+        for path in victims:
+            target = staging / path.name
+            os.replace(path, target)
+            moved.append((path, target))
+        shutil.rmtree(staging)
+    except Exception:
+        for original, staged in reversed(moved):
+            if staged.exists():
+                os.replace(staged, original)
+        staging.rmdir()
+        raise
+    return {"removed": len(victims)}
+
+
+def retain_releases(releases_root, manifest_path, *, active_readers_root=None):
+    releases = _validated_path(releases_root, "release root")
+    with _storage_lock(releases):
+        return _retain_releases_unlocked(
+            releases, manifest_path, active_readers_root=active_readers_root
+        )
+
+
+def _run_bounded_subprocess(arguments, *, cwd, env, timeout, output_limit):
+    if output_limit <= 0:
+        raise ValueError("output limit must be positive")
+    process = subprocess.Popen(
+        arguments,
+        cwd=cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        start_new_session=True,
+    )
+    selector = selectors.DefaultSelector()
+    selector.register(process.stdout, selectors.EVENT_READ)
+    output = bytearray()
+    deadline = time.monotonic() + timeout
+    try:
+        while selector.get_map():
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                try:
+                    os.killpg(process.pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+                process.wait()
+                raise subprocess.TimeoutExpired(arguments, timeout)
+            for key, _ in selector.select(remaining):
+                chunk = os.read(key.fileobj.fileno(), 65536)
+                if not chunk:
+                    selector.unregister(key.fileobj)
+                    continue
+                output.extend(chunk)
+                del output[:-output_limit]
+        return process.wait(), bytes(output)
+    finally:
+        selector.close()
+        process.stdout.close()
+
+
+def _restore_manifest(manifest, previous):
+    if previous is None:
+        manifest.unlink(missing_ok=True)
+        return
+    temporary = manifest.parent / f".{manifest.name}.{uuid.uuid4().hex}.rollback"
+    try:
+        temporary.write_bytes(previous)
+        os.replace(temporary, manifest)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def build_and_publish_release(releases_root, manifest_path, *, project_dir, dbt_bin, _timeout=300, _output_limit=64 * 1024):
+    releases = _validated_path(releases_root, "release root")
+    manifest = _validated_path(manifest_path, "manifest")
+    releases.mkdir(parents=True, exist_ok=True)
+    candidate = releases / f".candidate-{uuid.uuid4().hex}"
+    release = None
+    database = candidate / "transitops.duckdb"
+    try:
+        candidate.mkdir()
+        env = os.environ | {"DBT_DUCKDB_PATH": str(database)}
+        commands = (
+            ("parse",),
+            ("seed", "--full-refresh"),
+            ("run",),
+            ("test",),
+        )
+        for command in commands:
+            try:
+                completed_code, bounded_output = _run_bounded_subprocess(
+                    [
+                        str(dbt_bin), *command, "--project-dir", str(project_dir),
+                        "--profiles-dir", str(project_dir), "--target-path", str(candidate / "target"),
+                    ], cwd=project_dir, env=env, timeout=_timeout, output_limit=_output_limit,
+                )
+                command_output = bounded_output.decode("utf-8", errors="replace")
+            except (OSError, subprocess.TimeoutExpired) as error:
+                raise ReleaseBuildError(f"dbt {' '.join(command)} did not complete: {error}") from error
+            if completed_code:
+                raise ReleaseBuildError(
+                    f"dbt {' '.join(command)} failed ({completed_code}): {command_output}"
+                )
+        connection = duckdb.connect(str(database))
+        try:
+            connection.execute("CHECKPOINT")
+        finally:
+            connection.close()
+        connection = duckdb.connect(str(database), read_only=True)
+        try:
+            tables = {row[0] for row in connection.execute("show tables from main_marts").fetchall()}
+            if "mart_reliability" not in tables:
+                raise ReleaseBuildError("candidate is missing main_marts.mart_reliability")
+            columns = {row[0] for row in connection.execute("describe main_marts.mart_reliability").fetchall()}
+            required = {"observation_count", "on_time_rate", "severe_delay_rate"}
+            if not required <= columns:
+                raise ReleaseBuildError("candidate mart schema is incomplete")
+        finally:
+            connection.close()
+        release = releases / f"release-{uuid.uuid4().hex}"
+        os.replace(candidate, release)
+        candidate = None
+        database = release / "transitops.duckdb"
+        try:
+            with _storage_lock(releases):
+                previous_manifest = manifest.read_bytes() if manifest.is_file() else None
+                try:
+                    publish_manifest(manifest, {"path": str(database), "verified_read_only": True})
+                    _retain_releases_unlocked(
+                        releases,
+                        manifest,
+                        active_readers_root=releases.parent / "active-readers",
+                    )
+                except Exception:
+                    _restore_manifest(manifest, previous_manifest)
+                    shutil.rmtree(release, ignore_errors=True)
+                    release = None
+                    raise
+        except Exception as error:
+            raise ReleaseBuildError(f"release publication failed: {error}") from error
+        result = {"path": str(database), "verified_read_only": True}
+        release = None
+        return result
+    except (OSError, duckdb.Error) as error:
+        raise ReleaseBuildError(str(error)) from error
+    finally:
+        if candidate is not None and candidate.exists():
+            shutil.rmtree(candidate, ignore_errors=True)
+        if release is not None and release.exists():
+            shutil.rmtree(release, ignore_errors=True)
 
 
 def _validated_static_archive(payload):
@@ -618,6 +912,42 @@ def _validated_static_archive(payload):
     return archive
 
 
+def _activate_static_transaction(data, state, namespace, digest, payload, metadata, extracted_files=None):
+    data = _validated_path(data, "data root")
+    state = _validated_path(state, "state root")
+    validate_namespace(namespace)
+    active = data / "static" / "active"
+    extracted = data / "static" / "extracted" / digest
+    namespace_state = state / "static" / namespace
+    stage = data / "static" / f".activation-{uuid.uuid4().hex}"
+    moved = []
+    try:
+        stage.mkdir(parents=True)
+        (stage / "archive.zip").write_bytes(payload)
+        for name, content in (extracted_files or {}).items():
+            target = stage / "extracted" / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(content)
+        active.mkdir(parents=True, exist_ok=True)
+        os.replace(stage / "archive.zip", active / f"{digest}.zip")
+        moved.append(active / f"{digest}.zip")
+        if extracted_files is not None:
+            extracted.mkdir(parents=True, exist_ok=True)
+            for name in extracted_files:
+                target = extracted / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                os.replace(stage / "extracted" / name, target)
+                moved.append(target)
+        namespace_state.mkdir(parents=True, exist_ok=True)
+        guarded_atomic_write(namespace_state, Path("active.json"), [json.dumps(metadata, sort_keys=True).encode()])
+    except Exception:
+        for path in reversed(moved):
+            path.unlink(missing_ok=True)
+        raise
+    finally:
+        shutil.rmtree(stage, ignore_errors=True)
+
+
 def refresh_static_feed(
     data_root,
     state_root,
@@ -631,8 +961,8 @@ def refresh_static_feed(
     _timeout=30,
 ):
     validate_trust_boundary(scheduler, data_origin, namespace)
-    data = Path(data_root).resolve(strict=True)
-    state = Path(state_root).resolve(strict=True)
+    data = _validated_path(data_root, "data root")
+    state = _validated_path(state_root, "state root")
     request = urllib.request.Request(url, headers={"User-Agent": "TransitOps-Berlin/1"})
     previous_handler = signal.signal(
         signal.SIGALRM,
@@ -706,29 +1036,10 @@ def refresh_static_feed(
             )
             return result
         active_root = data / "static" / "active"
-        guarded_atomic_write(
-            data,
-            Path(f"static/active/{digest}.zip"),
-            [payload],
-            _cap_bytes=_cap_bytes,
-        )
+        extracted_files = {}
         for name in REQUIRED_STATIC_FILES:
-            if name == "stop_times.txt":
-                with archive.open(name) as stream:
-                    chunks = iter(lambda: stream.read(1024 * 1024), b"")
-                    guarded_atomic_write(
-                        data,
-                        Path(f"static/extracted/{digest}/{name}"),
-                        chunks,
-                        _cap_bytes=_cap_bytes,
-                    )
-            else:
-                guarded_atomic_write(
-                    data,
-                    Path(f"static/extracted/{digest}/{name}"),
-                    [archive.read(name)],
-                    _cap_bytes=_cap_bytes,
-                )
+            with archive.open(name) as stream:
+                extracted_files[name] = b"".join(iter(lambda: stream.read(1024 * 1024), b""))
         with archive.open("routes.txt") as stream:
             routes = csv.DictReader(io.TextIOWrapper(stream, encoding="utf-8-sig", newline=""))
             scoped_types = set()
@@ -745,11 +1056,8 @@ def refresh_static_feed(
             "route_types": sorted(scoped_types),
             "route_ids": sorted(route_ids),
         }
-        namespace_state.mkdir(parents=True, exist_ok=True)
-        guarded_atomic_write(
-            namespace_state,
-            Path("active.json"),
-            [json.dumps(metadata, sort_keys=True).encode()],
+        _activate_static_transaction(
+            data, state, namespace, digest, payload, metadata, extracted_files
         )
         if previous_digest:
             previous_zip = active_root / f"{previous_digest}.zip"
@@ -782,13 +1090,13 @@ def refresh_static_feed(
 
 def main(argv=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument("command", nargs="?", choices=("static", "realtime", "maintain", "metrics"))
-    parser.add_argument("--runtime-root", required=True, type=Path)
+    parser.add_argument("command", nargs="?", choices=("static", "realtime", "maintain", "metrics", "release", "status"))
+    parser.add_argument("--runtime-root", default=Path("."), type=Path)
     parser.add_argument("--root", default=Path("data"), type=Path)
     parser.add_argument("--state-root", default=Path("state"), type=Path)
-    parser.add_argument("--scheduler", required=True)
-    parser.add_argument("--data-origin", required=True)
-    parser.add_argument("--namespace", required=True)
+    parser.add_argument("--scheduler", default="cron")
+    parser.add_argument("--data-origin", default="real")
+    parser.add_argument("--namespace", default="production")
     parser.add_argument("--campaign-start", type=parse_timestamp)
     parser.add_argument("--paused", action="store_true")
     parser.add_argument("--static-url")
@@ -798,7 +1106,36 @@ def main(argv=None):
     parser.add_argument("--now", type=parse_timestamp)
     parser.add_argument("--metrics-start", type=parse_timestamp)
     parser.add_argument("--metrics-end", type=parse_timestamp)
+    parser.add_argument("--release-root", default=Path("warehouse/releases"), type=Path)
+    parser.add_argument("--manifest", default=Path("warehouse/current.json"), type=Path)
+    parser.add_argument("--dbt-bin", default=Path(".venv/bin/dbt"), type=Path)
+    parser.add_argument("--project-dir", default=Path("."), type=Path)
+    parser.add_argument("--status-root", default=Path("state/status"), type=Path)
+    parser.add_argument("--task")
+    parser.add_argument("--status")
     args = parser.parse_args(argv)
+    if args.command == "status":
+        if not args.task or not args.status:
+            parser.error("status requires --task and --status")
+        artifact = write_status_artifact(
+            args.status_root,
+            task=args.task,
+            status=args.status,
+            scheduler=args.scheduler,
+            data_origin=args.data_origin,
+            namespace=args.namespace,
+        )
+        print(json.dumps({"status": "ok", "artifact": str(artifact)}, sort_keys=True))
+        return 0
+    if args.command == "release":
+        result = build_and_publish_release(
+            args.release_root,
+            args.manifest,
+            project_dir=args.project_dir,
+            dbt_bin=args.dbt_bin,
+        )
+        print(json.dumps(result, sort_keys=True))
+        return 0
     if args.command in ("static", "realtime") and args.campaign_start is None:
         parser.error("collection commands require --campaign-start")
     if args.campaign_start is None:

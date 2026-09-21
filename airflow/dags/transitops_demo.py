@@ -33,4 +33,47 @@ with DAG(
             "--realtime-url file:///opt/airflow/fixtures/realtime.pb"
         ),
     )
-    demo_static >> demo_realtime
+    dbt_parse = BashOperator(
+        task_id="dbt_parse",
+        bash_command=(
+            "dbt parse --project-dir /opt/airflow/dbt --profiles-dir /opt/airflow/dbt "
+            "--target-path /demo-data/dbt-target && "
+            "python /opt/airflow/scripts/transitops.py status "
+            "--status-root /demo-data/status --task dbt_parse --status success "
+            "--scheduler airflow --data-origin synthetic --namespace demo"
+        ),
+    )
+    dbt_seed = BashOperator(
+        task_id="dbt_seed",
+        bash_command=(
+            "DBT_DUCKDB_PATH=/demo-data/dbt-target/transitops.duckdb "
+            "dbt seed --project-dir /opt/airflow/dbt --profiles-dir /opt/airflow/dbt "
+            "--target-path /demo-data/dbt-target && "
+            "python /opt/airflow/scripts/transitops.py status "
+            "--status-root /demo-data/status --task dbt_seed --status success "
+            "--scheduler airflow --data-origin synthetic --namespace demo"
+        ),
+    )
+    dbt_run = BashOperator(
+        task_id="dbt_run",
+        bash_command=(
+            "DBT_DUCKDB_PATH=/demo-data/dbt-target/transitops.duckdb "
+            "dbt run --project-dir /opt/airflow/dbt --profiles-dir /opt/airflow/dbt "
+            "--target-path /demo-data/dbt-target && "
+            "python /opt/airflow/scripts/transitops.py status "
+            "--status-root /demo-data/status --task dbt_run --status success "
+            "--scheduler airflow --data-origin synthetic --namespace demo"
+        ),
+    )
+    dbt_test = BashOperator(
+        task_id="dbt_test",
+        bash_command=(
+            "DBT_DUCKDB_PATH=/demo-data/dbt-target/transitops.duckdb "
+            "dbt test --project-dir /opt/airflow/dbt --profiles-dir /opt/airflow/dbt "
+            "--target-path /demo-data/dbt-target && "
+            "python /opt/airflow/scripts/transitops.py status "
+            "--status-root /demo-data/status --task dbt_test --status success "
+            "--scheduler airflow --data-origin synthetic --namespace demo"
+        ),
+    )
+    demo_static >> demo_realtime >> dbt_parse >> dbt_seed >> dbt_run >> dbt_test
