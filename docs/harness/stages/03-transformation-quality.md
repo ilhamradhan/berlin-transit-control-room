@@ -21,12 +21,15 @@ Airflow service, commit, or push was run.
   combines GTFS service date plus scheduled arrival/departure time into UTC;
   unmapped trips or malformed schedule values remain null.
 - Release and active-reader paths reject traversal and symlink traversal.
-- dbt subprocesses have a 300-second timeout and bounded tail output.
+- dbt subprocesses have a 300-second timeout and retain only bounded output while reading.
 - Static activation stages files before publishing metadata and removes files
   moved by a failed activation.
 - Failed release candidates never replace the current manifest; successful
   candidates are reopened read-only before publication.
-- Retention keeps the current release, the previous verified release, and any
+- Post-rename publication and retention failures restore the prior manifest and
+  remove the new release.
+- Active-reader registration and retention share the release storage lock;
+  retention keeps the current release, the previous verified release, and any
   release referenced by an active-reader marker.
 
 ## Verification
@@ -35,25 +38,26 @@ All commands ran in this worktree with synthetic fixtures or temporary paths.
 
 ```text
 $ .venv/bin/python -m unittest tests.test_stage3 tests.test_release tests.test_airflow_demo tests.test_transitops -v
-Ran 90 tests — OK
+Ran 95 tests — OK; retention cleanup failure, current/previous retention, active-reader safety,
+bounded dbt output, timeout process containment, and rollback-safe publication covered
 
 $ .venv/bin/python -m unittest discover -s tests -q
-Ran 97 tests — OK
+Ran 102 tests — OK
 
-$ .venv/bin/dbt parse --project-dir . --profiles-dir . --target-path /tmp/transitops-stage3-gate/target
+$ .venv/bin/dbt parse --project-dir . --profiles-dir . --target-path /tmp/transitops-stage3-final/target
 exit: 0
 
-$ DBT_DUCKDB_PATH=/tmp/transitops-stage3-gate/transitops.duckdb .venv/bin/dbt seed ...
+$ DBT_DUCKDB_PATH=/tmp/transitops-stage3-final/transitops.duckdb .venv/bin/dbt seed --project-dir . --profiles-dir . --target-path /tmp/transitops-stage3-final/target
 PASS=1; exit: 0
 
-$ DBT_DUCKDB_PATH=/tmp/transitops-stage3-gate/transitops.duckdb .venv/bin/dbt run ...
+$ DBT_DUCKDB_PATH=/tmp/transitops-stage3-final/transitops.duckdb .venv/bin/dbt run --project-dir . --profiles-dir . --target-path /tmp/transitops-stage3-final/target
 PASS=3; exit: 0
 
-$ DBT_DUCKDB_PATH=/tmp/transitops-stage3-gate/transitops.duckdb .venv/bin/dbt test ...
+$ DBT_DUCKDB_PATH=/tmp/transitops-stage3-final/transitops.duckdb .venv/bin/dbt test --project-dir . --profiles-dir . --target-path /tmp/transitops-stage3-final/target
 PASS=53; exit: 0
 
 $ .venv/bin/python -m unittest tests.test_airflow_demo -v
-Ran 5 tests — OK; exact executable demo command sequence completed in a temporary demo root
+Ran 6 tests — OK; exact executable demo command sequence completed in a temporary demo root
 
 $ docker compose config
 exit: 0

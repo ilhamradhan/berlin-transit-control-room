@@ -7,12 +7,14 @@ import io
 import json
 import os
 import re
+import selectors
 import shutil
 import signal
 import stat
 import subprocess
 import sys
 import tempfile
+import time
 import uuid
 import urllib.error
 import urllib.request
@@ -683,7 +685,28 @@ def publish_manifest(manifest_path, payload):
         temporary.unlink(missing_ok=True)
 
 
-def retain_releases(releases_root, manifest_path, *, active_readers_root=None):
+@contextmanager
+def active_release_reader(active_readers_root, release_path):
+    readers = _validated_path(active_readers_root, "active readers root")
+    readers.mkdir(parents=True, exist_ok=True)
+    release = _validated_path(release_path, "active release")
+    releases = release.parent.parent
+    with _storage_lock(releases):
+        if (
+            not release.is_file()
+            or release.name != "transitops.duckdb"
+            or not release.parent.name.startswith("release-")
+        ):
+            raise ValueError("active reader must reference a verified release")
+        marker = readers / f"reader-{uuid.uuid4().hex}"
+        marker.write_text(str(release), encoding="utf-8")
+        try:
+            yield release
+        finally:
+            marker.unlink(missing_ok=True)
+
+
+def _retain_releases_unlocked(releases_root, manifest_path, *, active_readers_root=None):
     releases = _validated_path(releases_root, "release root")
     manifest = _validated_path(manifest_path, "manifest")
     if not releases.is_dir() or not manifest.is_file():
@@ -712,12 +735,83 @@ def retain_releases(releases_root, manifest_path, *, active_readers_root=None):
     current_release = current.parent
     previous = [path for path in verified if path != current_release][:1]
     keep = active | {current} | {path / "transitops.duckdb" for path in previous}
-    removed = 0
-    for path in verified:
-        if path / "transitops.duckdb" not in keep:
-            shutil.rmtree(path)
-            removed += 1
-    return {"removed": removed}
+    victims = [path for path in verified if path / "transitops.duckdb" not in keep]
+    if not victims:
+        return {"removed": 0}
+    staging = releases / f".retention-{uuid.uuid4().hex}"
+    moved = []
+    try:
+        staging.mkdir()
+        for path in victims:
+            target = staging / path.name
+            os.replace(path, target)
+            moved.append((path, target))
+        shutil.rmtree(staging)
+    except Exception:
+        for original, staged in reversed(moved):
+            if staged.exists():
+                os.replace(staged, original)
+        staging.rmdir()
+        raise
+    return {"removed": len(victims)}
+
+
+def retain_releases(releases_root, manifest_path, *, active_readers_root=None):
+    releases = _validated_path(releases_root, "release root")
+    with _storage_lock(releases):
+        return _retain_releases_unlocked(
+            releases, manifest_path, active_readers_root=active_readers_root
+        )
+
+
+def _run_bounded_subprocess(arguments, *, cwd, env, timeout, output_limit):
+    if output_limit <= 0:
+        raise ValueError("output limit must be positive")
+    process = subprocess.Popen(
+        arguments,
+        cwd=cwd,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        start_new_session=True,
+    )
+    selector = selectors.DefaultSelector()
+    selector.register(process.stdout, selectors.EVENT_READ)
+    output = bytearray()
+    deadline = time.monotonic() + timeout
+    try:
+        while selector.get_map():
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                try:
+                    os.killpg(process.pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+                process.wait()
+                raise subprocess.TimeoutExpired(arguments, timeout)
+            for key, _ in selector.select(remaining):
+                chunk = os.read(key.fileobj.fileno(), 65536)
+                if not chunk:
+                    selector.unregister(key.fileobj)
+                    continue
+                output.extend(chunk)
+                del output[:-output_limit]
+        return process.wait(), bytes(output)
+    finally:
+        selector.close()
+        process.stdout.close()
+
+
+def _restore_manifest(manifest, previous):
+    if previous is None:
+        manifest.unlink(missing_ok=True)
+        return
+    temporary = manifest.parent / f".{manifest.name}.{uuid.uuid4().hex}.rollback"
+    try:
+        temporary.write_bytes(previous)
+        os.replace(temporary, manifest)
+    finally:
+        temporary.unlink(missing_ok=True)
 
 
 def build_and_publish_release(releases_root, manifest_path, *, project_dir, dbt_bin, _timeout=300, _output_limit=64 * 1024):
@@ -725,6 +819,7 @@ def build_and_publish_release(releases_root, manifest_path, *, project_dir, dbt_
     manifest = _validated_path(manifest_path, "manifest")
     releases.mkdir(parents=True, exist_ok=True)
     candidate = releases / f".candidate-{uuid.uuid4().hex}"
+    release = None
     database = candidate / "transitops.duckdb"
     try:
         candidate.mkdir()
@@ -737,22 +832,18 @@ def build_and_publish_release(releases_root, manifest_path, *, project_dir, dbt_
         )
         for command in commands:
             try:
-                with tempfile.TemporaryFile() as output:
-                    completed = subprocess.run(
-                        [
-                            str(dbt_bin), *command, "--project-dir", str(project_dir),
-                            "--profiles-dir", str(project_dir), "--target-path", str(candidate / "target"),
-                        ], cwd=project_dir, env=env, stdout=output, stderr=subprocess.STDOUT,
-                        timeout=_timeout,
-                    )
-                    output.seek(0, os.SEEK_END)
-                    output.seek(max(0, output.tell() - _output_limit))
-                    command_output = output.read().decode("utf-8", errors="replace")
+                completed_code, bounded_output = _run_bounded_subprocess(
+                    [
+                        str(dbt_bin), *command, "--project-dir", str(project_dir),
+                        "--profiles-dir", str(project_dir), "--target-path", str(candidate / "target"),
+                    ], cwd=project_dir, env=env, timeout=_timeout, output_limit=_output_limit,
+                )
+                command_output = bounded_output.decode("utf-8", errors="replace")
             except (OSError, subprocess.TimeoutExpired) as error:
                 raise ReleaseBuildError(f"dbt {' '.join(command)} did not complete: {error}") from error
-            if completed.returncode:
+            if completed_code:
                 raise ReleaseBuildError(
-                    f"dbt {' '.join(command)} failed ({completed.returncode}): {command_output}"
+                    f"dbt {' '.join(command)} failed ({completed_code}): {command_output}"
                 )
         connection = duckdb.connect(str(database))
         try:
@@ -774,18 +865,33 @@ def build_and_publish_release(releases_root, manifest_path, *, project_dir, dbt_
         os.replace(candidate, release)
         candidate = None
         database = release / "transitops.duckdb"
-        publish_manifest(manifest, {"path": str(database), "verified_read_only": True})
-        retain_releases(
-            releases,
-            manifest,
-            active_readers_root=releases.parent / "active-readers",
-        )
-        return {"path": str(database), "verified_read_only": True}
+        try:
+            with _storage_lock(releases):
+                previous_manifest = manifest.read_bytes() if manifest.is_file() else None
+                try:
+                    publish_manifest(manifest, {"path": str(database), "verified_read_only": True})
+                    _retain_releases_unlocked(
+                        releases,
+                        manifest,
+                        active_readers_root=releases.parent / "active-readers",
+                    )
+                except Exception:
+                    _restore_manifest(manifest, previous_manifest)
+                    shutil.rmtree(release, ignore_errors=True)
+                    release = None
+                    raise
+        except Exception as error:
+            raise ReleaseBuildError(f"release publication failed: {error}") from error
+        result = {"path": str(database), "verified_read_only": True}
+        release = None
+        return result
     except (OSError, duckdb.Error) as error:
         raise ReleaseBuildError(str(error)) from error
     finally:
         if candidate is not None and candidate.exists():
             shutil.rmtree(candidate, ignore_errors=True)
+        if release is not None and release.exists():
+            shutil.rmtree(release, ignore_errors=True)
 
 
 def _validated_static_archive(payload):

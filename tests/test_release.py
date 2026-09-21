@@ -1,4 +1,5 @@
 import json
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -14,6 +15,35 @@ DBT = ROOT / ".venv" / "bin" / "dbt"
 
 
 class ReleasePublicationTest(unittest.TestCase):
+    def test_dbt_failure_output_capture_is_bounded_at_source(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            releases = root / "releases"
+            releases.mkdir()
+            manifest = root / "current.json"
+            manifest.write_text('{"release": "old.duckdb"}\n')
+            fake_dbt = root / "dbt"
+            fake_dbt.write_text(
+                f"#!{sys.executable}\n"
+                "import sys\n"
+                "sys.stdout.write('x' * 200000)\n"
+                "sys.exit(1)\n"
+            )
+            fake_dbt.chmod(0o700)
+
+            with self.assertRaises(transitops.ReleaseBuildError) as raised:
+                transitops.build_and_publish_release(
+                    releases, manifest, project_dir=root, dbt_bin=fake_dbt, _output_limit=1024
+                )
+
+            self.assertLessEqual(len(str(raised.exception)), 1200)
+
+    def test_dbt_output_limit_must_be_positive(self):
+        with self.assertRaises(ValueError):
+            transitops._run_bounded_subprocess(
+                [sys.executable, "-c", "pass"], cwd=ROOT, env=dict(), timeout=1, output_limit=0
+            )
+
     def test_release_paths_reject_symlinks_and_traversal(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -129,6 +159,27 @@ class ReleasePublicationTest(unittest.TestCase):
 
             self.assertTrue(paths[0].exists())
 
+    def test_active_reader_registration_is_retention_locked(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            releases = root / "releases"
+            release = releases / "release-reader"
+            current = releases / "release-current"
+            for path in (release, current):
+                path.mkdir(parents=True)
+                (path / "transitops.duckdb").write_bytes(b"verified")
+            manifest = root / "current.json"
+            manifest.write_text(json.dumps({"path": str(current / "transitops.duckdb"), "verified_read_only": True}))
+            readers = root / "active-readers"
+
+            with transitops.active_release_reader(readers, release / "transitops.duckdb"):
+                markers = list(readers.iterdir())
+                self.assertEqual(len(markers), 1)
+                transitops._retain_releases_unlocked(releases, manifest, active_readers_root=readers)
+                self.assertTrue(release.exists())
+
+            self.assertEqual(list(readers.iterdir()), [])
+
     def test_retention_removes_only_unreferenced_older_releases(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
@@ -148,6 +199,29 @@ class ReleasePublicationTest(unittest.TestCase):
 
             self.assertFalse(remove.exists())
             self.assertTrue(candidate.exists())
+
+    def test_retention_failure_preserves_all_preexisting_releases(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            releases = root / "releases"
+            releases.mkdir()
+            paths = [releases / f"release-{name}" for name in ("a-remove", "b-remove", "current")]
+            for path in paths:
+                path.mkdir()
+                (path / "transitops.duckdb").write_bytes(path.name.encode())
+            manifest = root / "current.json"
+            manifest.write_text(json.dumps({"path": str(paths[-1] / "transitops.duckdb")}))
+
+            with patch.object(transitops.shutil, "rmtree", side_effect=OSError("cleanup failed")):
+                with self.assertRaises(OSError):
+                    transitops.retain_releases(releases, manifest)
+
+            for path in paths:
+                self.assertEqual((path / "transitops.duckdb").read_bytes(), path.name.encode())
+            self.assertEqual(
+                json.loads(manifest.read_text())["path"],
+                str(paths[-1] / "transitops.duckdb"),
+            )
 
     def test_manifest_replacement_is_atomic_and_failed_candidate_keeps_manifest(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -200,6 +274,24 @@ class ReleasePublicationTest(unittest.TestCase):
                 )
             finally:
                 connection.close()
+
+    def test_publication_failure_rolls_back_renamed_release_and_manifest(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            releases = root / "releases"
+            manifest = root / "current.json"
+            manifest.write_text('{"path": "healthy.duckdb"}\n')
+
+            with patch.object(
+                transitops, "_retain_releases_unlocked", side_effect=OSError("retention failed")
+            ):
+                with self.assertRaises(transitops.ReleaseBuildError):
+                    transitops.build_and_publish_release(
+                        releases, manifest, project_dir=ROOT, dbt_bin=DBT
+                    )
+
+            self.assertEqual(manifest.read_text(), '{"path": "healthy.duckdb"}\n')
+            self.assertEqual(list(releases.iterdir()), [])
 
 
 if __name__ == "__main__":
