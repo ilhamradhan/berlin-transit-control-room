@@ -24,8 +24,8 @@ This file summarizes accepted decisions from the requirements grill. Detailed im
 | D-018 | Use three isolated synthetic failures | Exercises real incident paths without corrupting collected history. |
 | D-019 | Allow only three demo reset/retry controls | Prevents arbitrary DAG or shell execution without pretending an external outage is always recoverable. |
 | D-020 | Keep the RAG assistant read-only | Natural-language interpretation is separated from authorized side effects. |
-| D-021 | Use Gemini 2.5 Flash-Lite with local retrieval | Avoids a multi-gigabyte local generation model on a CPU-only low-memory VPS; Stage 5 must recheck availability and pin the exact model ID. |
-| D-022 | Use LanceDB and a compact local embedding model | Provides persistent local semantic retrieval without another database service. |
+| D-021 | Defer Gemini 2.5 Flash-Lite evaluation to Stage 5 | Stage 4 uses no generation provider; Stage 5 must recheck availability and pin an exact model ID before any provider contact. |
+| D-022 | Defer LanceDB and embedding-model evaluation to Stage 5 | Stage 4 keeps retrieval local, citation-preserving, and dependency-free; a persistent semantic index requires a later approved scope. |
 | D-023 | Require formal RAG evaluation | Citations, refusals, retrieval quality, and prohibited claims must be proven. |
 | D-024 | Exclude weather from version one | Avoids extra ingestion and causal-interpretation scope. |
 | D-025 | Use phase-gated Hermes development | Code alone does not satisfy a stage; verification evidence is mandatory. |
@@ -38,6 +38,12 @@ This file summarizes accepted decisions from the requirements grill. Detailed im
 | D-032 | Invalidate Airflow 3.3.1 standalone on the current VPS | A corrected run peaked at 756 MiB while swap increased across all three 30-second samples. The safety stop ruled out Airflow as a production service on this host. |
 | D-033 | Use cron for real collection and Dockerized Airflow for the synthetic learning demo | Both paths call shared idempotent pipeline commands. [`ARCHITECTURE.md`](ARCHITECTURE.md#scheduler-and-data-trust-boundary) defines the single canonical trust boundary. |
 | D-034 | Use a seven-day minimum campaign with 90% slot coverage | Measured local storage approached the 4 GiB hard cap before 14 days; seven days preserves a bounded, useful dataset without pretending the original target was met. |
+| D-035 | Make Stage 4 a static public evidence product | Deliver only Transit Reliability and System Documentation pages from compact build-time aggregates; defer Control Room, Incident Detail, recovery controls, and live updates. |
+| D-036 | Publish only mode/route/day aggregates from the accepted campaign | Public output contains no stop-level, event-level, trip-level, raw, or private operational data; the private verified release remains the build input. |
+| D-037 | Keep the first RAG layer local or demo-bound and read-only | It answers questions about approved documentation, metric definitions, limitations, and runbook guidance with citations; it does not expose a public interactive endpoint or claim recovery. |
+| D-038 | Evaluate Cloudflare without committing to it | Pages/R2/Workers may be measured with synthetic artifacts only; adoption is optional, reversible, and requires explicit later approval. |
+| D-039 | Do not restart collection for Stage 4 | The accepted seven-day dataset is finite evidence; Stage 4 builds and evaluates against it while production cron remains stopped. |
+| D-040 | Defer external RAG-provider integration | Stage 4 proves local citation-preserving retrieval and insufficiency behavior without contacting a provider; a provider may be evaluated in a later approved stage. |
 
 ## Rejected or deferred alternatives
 
@@ -51,4 +57,7 @@ This file summarizes accepted decisions from the requirements grill. Detailed im
 - General VPS infrastructure observability in the main product
 - Local generative model on the VPS
 - Arbitrary LLM-driven recovery commands
+- Streamlit as the Stage 4 delivery runtime
+- Public interactive RAG in the static dashboard
+- Uploading the private collection archive to Cloudflare
 - Complete raw Hermes transcripts in Git

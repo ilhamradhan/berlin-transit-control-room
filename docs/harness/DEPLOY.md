@@ -1,19 +1,23 @@
 # Deployment strategy
 
-**Status:** planned; no TransitOps service has been deployed.
+**Status:** Stage 4 static delivery is planned; no TransitOps service has been deployed.
 
 ## Runtime target
 
-The working stack is intended to run on the user’s always-on VPS after Stage 1 identifies a Docker topology that fits. It is not intended to be public internet infrastructure.
+The collection and transformation stack remains private and finite. Stage 4
+does not turn the VPS into a continuously running public application.
 
-Planned components:
+Existing/private components:
 
-- Reduced Airflow scheduler/API topology with LocalExecutor and low parallelism
-- PostgreSQL exclusively for Airflow metadata
-- Streamlit application
+- Cron production path and Dockerized synthetic Airflow learning artifact
 - Filesystem Parquet and versioned DuckDB releases
-- SQLite control-plane database
-- Local LanceDB index and compact embedding model
+
+Stage 4 delivery components:
+
+- Build-time exporter for compact sanitized aggregates
+- Static Transit Reliability and System Documentation pages
+- Local or CLI/demo-bound read-only RAG evaluation
+- Optional Cloudflare feasibility spike using synthetic artifacts only
 
 Existing unrelated containers remain outside this project’s lifecycle.
 
@@ -23,7 +27,8 @@ The planned preflight will report resource and port conflicts and refuse unsafe 
 
 ## Application access
 
-The operational application is intended to remain private/local or Tailscale-only. A stable private route will be selected during deployment without exposing Airflow, DuckDB, or control endpoints publicly.
+No operational application or writable public endpoint is deployed in Stage 4.
+The private verified release remains outside the static site.
 
 ## Public presentation
 
@@ -42,17 +47,21 @@ Do not deploy or publish:
 - Airflow credentials or metadata database
 - `.env` values
 - Unfiltered logs
-- Real 14–28-day transit archives through GitHub
-- Local embedding-model files or LanceDB index
+- Real transit archives through GitHub or the public site
+- Local embedding-model files or retrieval index
 - Writable operational endpoints on the public internet
 
 ## Recovery and rollback
 
 - Failed dbt candidates leave the current DuckDB release active.
 - Current and previous verified releases are retained.
-- Recovery controls are allowlisted application actions only.
-- Deployment rollback procedures will be written after the concrete Compose topology is verified.
+- No recovery controls are deployed in Stage 4.
+- If Cloudflare adoption is later approved, rollback/unpublish procedures must
+  be recorded before external publication.
 
 ## Future cloud option
 
-Cloudflare R2 or MotherDuck may be evaluated later if measured storage or public-query needs justify them. Supabase and BigQuery are not part of version one.
+Cloudflare Pages/R2/Workers may be evaluated with synthetic artifacts only if
+measurements justify them. Adoption is optional and reversible. The private
+archive is not uploaded; Supabase, MotherDuck, and BigQuery are not part of
+version one.

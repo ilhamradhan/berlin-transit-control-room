@@ -27,7 +27,7 @@ A small RAG assistant will answer operational questions from approved project do
 | Setting | Decision |
 |---|---|
 | Realtime interval | 15 minutes |
-| Minimum useful run | 14 elapsed days with at least 90% successful collection slots |
+| Minimum useful run | 7 elapsed days with at least 90% successful collection slots |
 | Hard stop | 28 calendar days or 4 GB of collected data, whichever comes first |
 | Raw payload retention | 48 hours, including invalid or quarantined payloads |
 | Static GTFS | Check daily; keep each compressed version referenced by retained observations |
@@ -47,8 +47,8 @@ These are samples of realtime predictions, not measured passenger arrival times.
 | Files and analytics | Parquet and DuckDB |
 | Incident state | SQLite |
 | App | Streamlit |
-| Retrieval | LanceDB with local embeddings |
-| Answer generation | Gemini 2.5 Flash-Lite |
+| Retrieval | Local citation-preserving lexical retrieval |
+| Answer generation | None in Stage 4; citations or insufficiency only |
 
 ## How the agent work is documented
 

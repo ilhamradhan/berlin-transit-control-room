@@ -2,7 +2,7 @@
 
 **Goal:** Build a verified Berlin transit data reliability platform while preserving reproducible evidence of harnessing an AI agent.
 
-**Approach:** Deliver six runnable stage increments. Every stage begins with a self-contained execution prompt and ends only after acceptance evidence and review. Implementation details and exact versions are refined at the start of the relevant stage rather than guessed in advance.
+**Approach:** Deliver five runnable stage increments. Every stage begins with a self-contained execution prompt and ends only after acceptance evidence and review. Implementation details and exact versions are refined at the start of the relevant stage rather than guessed in advance.
 
 ## Stage 1: Harness and source validation
 
@@ -44,11 +44,8 @@ at least 90% successful collection slots. The 4 GiB storage cap remains the
 hard stop. Decision D-034 records the storage-driven change from the original
 14-day baseline.
 
-**Kanban gate:** `transitops-berlin/t_f9a2fd9e` tracks Stage 2 closure and remains
-blocked until the campaign reaches its acceptance window. Stage 3 planning is
-`t_95a49a58`, dependent on that closure card. Do not create Stage 3
-implementation cards until the Stage 3 plan is documented in `docs/harness/`
-and approved.
+**Status:** closed with the accepted seven-day campaign. Stage 3 is complete
+and merged to `main` at `926e674`.
 
 **Deliverables**
 
@@ -76,6 +73,8 @@ and approved.
 
 ## Stage 3: Transformation and quality
 
+**Status:** passed and merged at `926e674`; production collection remains stopped.
+
 **Deliverables**
 
 - dbt staging, intermediate, and mart layers
@@ -91,67 +90,57 @@ and approved.
 - Failed tests block publication.
 - The writer checkpoints and closes the candidate before an independent read-only reopen check.
 - The manifest is replaced atomically on the same filesystem.
-- Streamlit can read the current release while a candidate builds.
+- The public-artifact build can read the current verified release while a candidate builds.
 - Current and previous releases are retained; cleanup waits until older releases have no active readers.
 
-## Stage 4: Control Room
+## Stage 4: Static public product and bounded RAG
 
 **Deliverables**
 
-- SQLite control-plane schema in WAL mode
-- Control Room and Incident Detail pages
-- Three isolated synthetic failure scenarios
-- Three approved demo reset/retry controls
-- Post-action health checks and audit history
+- Static **Transit Reliability** page using compact, sanitized aggregates from the accepted seven-day campaign.
+- Static **System Documentation** page with architecture, source contracts, metric definitions, limitations, and coverage caveats.
+- Public aggregates limited to mode/route/day; no stop-level, event-level, trip-level, raw, or private operational data.
+- Existing Stage 3 metrics only: median/P90 predicted delay, on-time rate, severe-delay rate, cancellation rate, realtime coverage, and schedule-match rate.
+- Build-time artifact generation from the private verified release; real campaign artifacts are not committed to Git.
+- Local or bounded cited read-only RAG evaluation over approved documentation and runbook guidance.
+- Cloudflare Pages/R2/Workers feasibility measurements using synthetic data only; adoption remains optional and reversible.
 
 **Gate**
 
-- Each scenario is detected by the real pipeline path.
-- Healthy collected data remains unchanged.
-- No arbitrary command execution is possible.
-- Browser QA proves that an operator can inspect evidence, open cited guidance, run the approved demo control, and see the post-action health check.
+- The dashboard is static, read-only, and does not download or query the private archive.
+- Public artifacts contain only the approved aggregate contract and nearby metric definitions and caveats.
+- Browser QA proves both pages, navigation, metric rendering, low-coverage warnings, and absence of operational controls.
+- Known RAG questions retrieve the expected document sections and cite them; unsupported questions return explicit insufficiency.
+- The RAG layer cannot calculate metrics, execute commands, or claim recovery.
+- Cloudflare local synthetic artifact/request-shape checks; provider-specific latency, limits, failure behavior, and rollback remain deferred without external approval.
+- Collection remains stopped; no Control Room, Incident Detail, recovery control, or live dashboard is built in this stage.
 
 **Suggested skills:** `test-driven-development`, `requesting-code-review`, then `dogfood` once runnable.
 
-## Stage 5: RAG operations assistant
+## Stage 5: Portfolio presentation
 
-**Deliverables**
-
-- Approved corpus and sanitizer
-- Compact embedding-model spike
-- LanceDB index
-- Verified and pinned Gemini model ID at the start of Stage 5
-- Retrieval with source/section metadata
-- Gemini answer contract with citations and insufficiency behavior
-- Formal evaluation dataset
-
-**Gate**
-
-- Expected documents are retrieved for known questions.
-- Citations support generated claims.
-- Unsupported questions are refused or qualified.
-- The assistant never claims to have executed recovery.
-- Excluded operational information is not exposed.
-- Installed model, corpus, and index stay below 1 GB.
-
-## Stage 6: Portfolio presentation
+**Approach:** use the separate `design` profile for an audit-first visual and
+content brief, then use the `code` profile to implement only the accepted
+brief. The design profile does not write to the TransitOps worktree.
 
 **Deliverables**
 
 - Transit Reliability explorer
 - System Documentation page
+- Approved visual/content brief covering hierarchy, typography, spacing,
+  responsive behavior, accessibility, and truthful product copy
 - Completed dark architecture diagram
 - Browser QA and screenshots
-- Recorded real application demonstration
+- Recorded static-product demonstration
 - Branded public case study planned for `ilrama.com/p/transitops-berlin`
 - Final curated harness records and AI collaboration disclosure
 
 **Gate**
 
-- All four pages are navigable and free of visible errors.
+- Both public pages are navigable and free of visible errors.
 - Metrics have nearby definitions and coverage caveats.
-- Demo follows the complete operational journey.
-- Public materials contain no secrets or real collected archive.
+- Demo follows the finite data-to-artifact-to-dashboard journey.
+- Public materials contain no secrets, raw payloads, trip/event rows, or real collected archive.
 
 ## Cross-stage rules
 
@@ -162,5 +151,6 @@ and approved.
 - Code behavior uses test-first development where practical.
 - Every external state change is read back.
 - No push occurs unless explicitly requested; repository creation and initial push are explicitly authorized in this session.
-- Weather, cloud storage, local generation models, and arbitrary recovery controls are out of scope.
+- Weather, recurring cloud compute, public interactive RAG, local generation models, Control Room/recovery controls, and arbitrary commands are out of scope.
+- Cloudflare delivery is a measured optional path, not a Stage 4 deployment requirement.
 - Scheduler and data provenance follow the canonical [trust boundary](ARCHITECTURE.md#scheduler-and-data-trust-boundary); other documents link to it instead of redefining it.

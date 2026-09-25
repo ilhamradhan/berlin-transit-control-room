@@ -44,19 +44,22 @@ Stage 1 compared a small sample from [`v6.vbb.transport.rest`](https://v6.vbb.tr
 4. An independent process reopens it read-only and checks the expected marts.
 5. Failed candidates never replace the current healthy release.
 6. A temporary manifest is written beside the current manifest and replaced atomically on the same filesystem.
-7. Streamlit opens the manifest's verified release read-only.
+7. A build-time exporter reads the manifest's verified release read-only and writes compact public aggregates.
 8. Current and previous releases are retained; cleanup waits until older releases have no active readers.
 
 This avoids unsafe concurrent writes and provides simple rollback and publication-age measurement.
 
-## Application pages
+## Stage 4 public pages
 
-- **Control Room:** overall state, source freshness, collection coverage, Airflow/dbt outcomes, quality tests, schedule match rate, mart age, incidents, and latest verified recovery.
-- **Incident Detail:** diagnostic evidence, cited guidance, recovery control, and verification state.
-- **Transit Reliability:** median and P90 predicted delay, on-time observation rate (≤5 minutes late), severe-delay rate (>15 minutes late), source-provided cancellation rate, realtime coverage, matching rate, and route/mode/time breakdowns.
-- **System Documentation:** architecture, source contracts, metric definitions, limitations, and runbooks.
+- **Transit Reliability:** median and P90 predicted delay, on-time observation rate (≤5 minutes late), severe-delay rate (>15 minutes late), source-provided cancellation rate, realtime coverage, matching rate, and mode/route/day breakdowns.
+- **System Documentation:** architecture, source contracts, metric definitions, limitations, coverage caveats, and runbooks.
 
-Reliability filters include date range, transport mode, route, stop, weekday, and hour range.
+The public artifact contract supports only sanitized mode/route/day aggregates.
+It does not expose stop-level, event-level, trip-level, raw, or private
+operational data. The dashboard is static and read-only.
+
+The Control Room, Incident Detail, synthetic recovery controls, and continuously
+updating dashboard are deferred; they are not part of Stage 4.
 
 ## Controlled failures
 
@@ -66,7 +69,8 @@ Demo mode isolates synthetic fixtures and incidents from real collection:
 2. Static/realtime schedule mismatch
 3. dbt quality-test failure blocking publication
 
-Only the corresponding demo controls are executable. They do not guarantee recovery from an external outage, and the assistant cannot trigger them.
+These scenarios remain future Control Room scope. Stage 4 exposes no controls
+for them, and the assistant cannot trigger them.
 
 ## RAG boundary
 
@@ -74,16 +78,17 @@ Only the corresponding demo controls are executable. They do not guarantee recov
 Approved Markdown and generated metadata
              │ sanitize before indexing/context assembly
              ▼
-Compact local embeddings + LanceDB
+Compact local retrieval/index
              │ retrieve top supporting passages
              ├── sanitized structured incident context
              ▼
-Gemini 2.5 Flash-Lite
+Local retrieval only; external provider integration is deferred
              │
 Cited read-only explanation or explicit insufficiency
 ```
 
-Allowed context: sanitized project documentation, dbt/Airflow metadata, and redacted error summaries.
+Stage 4 allowed context: sanitized project documentation, metric definitions,
+limitations, and cited runbook guidance.
 
 Forbidden context: secrets, environment variables, connection strings, unfiltered logs, unrestricted filesystem contents, or arbitrary commands.
 
@@ -97,4 +102,8 @@ Forbidden context: secrets, environment variables, connection strings, unfiltere
 - RAG total target: below 1 GB
 - Campaign hard stop: 28 calendar days or 4 GB, whichever comes first
 
-Cloud object storage, Supabase, MotherDuck, and BigQuery are outside version one. Cloud storage may be reconsidered only after measured local growth justifies it.
+Cloud object storage, Supabase, MotherDuck, and BigQuery are outside the
+runtime architecture. Cloudflare Pages/R2/Workers are optional delivery
+candidates evaluated with synthetic artifacts only; adoption requires measured
+limits and remains reversible. No public interactive RAG or recurring cloud
+compute is required.

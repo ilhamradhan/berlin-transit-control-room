@@ -8,11 +8,12 @@ This folder contains the project design, agent instructions, stage gates, and ev
 |---|---|
 | [`CONTINUE.md`](CONTINUE.md) | Copy-paste prompts for starting or resuming work |
 | [`PROMPT.md`](PROMPT.md) | Accepted project brief and ownership statement |
-| [`PLAN.md`](PLAN.md) | Six implementation stages and their gates |
+| [`PLAN.md`](PLAN.md) | Five implementation stages and their gates |
 | [`HARNESS.md`](HARNESS.md) | Rules for agent use, evidence, and stage completion |
 | [`EVALUATION.md`](EVALUATION.md) | Checks that prove a stage is complete |
 | [`SKILLS.md`](SKILLS.md) | Skills used, proposed, inspected, or excluded |
 | [`stages/01-stage-gate.md`](stages/01-stage-gate.md) | Stage 1 evidence, failed criteria, and remediation boundary |
+| [`stages/04-static-dashboard-rag.md`](stages/04-static-dashboard-rag.md) | Stage 4 static-product contract and gate |
 | [`SOURCES.md`](SOURCES.md) | Accepted VBB source roles and constraints |
 | [`SOURCE_CONTRACTS.md`](SOURCE_CONTRACTS.md) | Static GTFS, GTFS-Realtime, and REST contracts |
 | [`GLOSSARY.md`](GLOSSARY.md) | Source and mapping terminology |

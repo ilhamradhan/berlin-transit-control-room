@@ -52,7 +52,7 @@ state/
 models/
 └── embeddings/            # local model cache; ignored by Git
 rag/
-└── index/                 # LanceDB; ignored by Git
+└── index/                 # local retrieval index; ignored by Git
 ```
 
 ## Secrets boundary

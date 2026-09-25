@@ -1,0 +1,17 @@
+[
+  {
+    "source": "ARCHITECTURE.md",
+    "section": "Versioned publication",
+    "text": "The verified release is reopened read-only before compact public aggregates are built."
+  },
+  {
+    "source": "EVALUATION.md",
+    "section": "Stage 4 static product",
+    "text": "The dashboard distinguishes prediction observations from actual arrivals and shows coverage caveats."
+  },
+  {
+    "source": "04-static-dashboard-rag.md",
+    "section": "Red line",
+    "text": "Stage 4 is a finite static public evidence product, not an operational system."
+  }
+]
