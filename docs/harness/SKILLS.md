@@ -20,6 +20,8 @@ A skill is **used** only when its workflow changes an artifact or action. Readin
 | `ponytail:ponytail-review` | Checked the gate diff for duplicate evidence and speculative runtime artifacts. |
 | `test-driven-development` | Drove failing tests before the retained smoke command and each blocking correction. |
 | `requesting-code-review` | Found and verified fixes for unsafe locking, unbounded response time, non-JSON failures, unsupported evidence, test isolation, and stale architecture labels. |
+| `design-taste-frontend` (design profile) | Audited the Stage 4 pages and produced `stages/05-design-brief.md` with hierarchy, responsive, accessibility, copy, and anti-slop constraints. |
+| `emil-design-eng` (design profile) | Guided the restrained visual hierarchy, spacing, typography, focus, and motion-scope recommendations in `stages/05-design-brief.md`. |
 
 ## Likely later
 
@@ -33,6 +35,23 @@ A skill is **used** only when its workflow changes an artifact or action. Readin
 | A stage appears complete | `requesting-code-review` | Independent gate review |
 | The app can be used in a browser | `dogfood` | Exploratory QA report |
 | Hermes configuration itself changes | `hermes-agent` | Verified Hermes procedure |
+
+## Stage 5 profile separation
+
+Stage 5 separates design exploration from implementation:
+
+- **Design profile:** audit the existing pages, propose visual direction,
+  responsive behavior, information hierarchy, and user-facing copy. It may
+  use Taste Skill v2, Emil's design-engineering guidance, and a content/UX
+  writing skill when those are installed and explicitly selected. It does not
+  edit the TransitOps worktree.
+- **Code profile:** implement only the approved design/content brief in the
+  existing plain HTML/CSS stack, then run tests, browser QA, accessibility,
+  privacy, and complexity checks.
+
+The design profile's output is a proposal until the user accepts it. Do not
+record a design skill as used until it materially changes a reviewed brief or
+artifact.
 
 These entries are candidates or selected future tools, not work already completed.
 

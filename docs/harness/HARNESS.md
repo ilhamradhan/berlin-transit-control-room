@@ -14,9 +14,8 @@ I own the product choices and acceptance criteria. Agent output counts only afte
 | 1. Setup and source validation | Resource-safe skeleton, source samples, contracts, architecture | Measured resource use, valid samples, successful test DAG |
 | 2. Ingestion and storage | Scheduled collection, retention, Parquet compaction | Tests, successful DAG run, storage projection |
 | 3. Transformation and quality | dbt models, tests, versioned DuckDB publication | dbt artifacts and publication checks |
-| 4. Control Room | Health views, incidents, three demo controls | Browser checks and incident audit records |
-| 5. RAG assistant | Sanitized corpus and cited answers | Retrieval, citation, refusal, and leakage tests |
-| 6. Portfolio presentation | Reliability explorer, diagram, case study, demo | Browser QA and published artifacts |
+| 4. Static public product and bounded RAG | Reliability and documentation pages, compact artifacts, local cited retrieval | Browser, privacy, retrieval, and delivery-shape checks |
+| 5. Portfolio presentation | Reliability explorer, diagram, case study, demo | Browser QA and published artifacts |
 
 Writing files does not pass a stage. The checks in [`EVALUATION.md`](EVALUATION.md) do.
 
@@ -46,7 +45,7 @@ Hermes Kanban board `transitops-berlin` tracks active local work and stage depen
 - Test new behavior before accepting it.
 - Test DuckDB candidates before changing the current-release manifest.
 - Read back remote writes before reporting success.
-- Do not send secrets, connection strings, environment variables, or raw logs to Gemini.
+- Do not send secrets, connection strings, environment variables, or raw logs to any future provider; Stage 4 uses local citation-preserving retrieval only.
 - Do not let the LLM run commands or change pipeline state.
 - Do not stop unrelated VPS services.
 - Before a coding stage passes, run the normal acceptance checks and a separate `ponytail:ponytail-review`; complexity review never replaces correctness review.

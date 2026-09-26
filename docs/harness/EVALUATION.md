@@ -48,33 +48,25 @@ Entity-level realtime coverage within successful snapshots is evaluated separate
 - Atomic publication selects only a verified candidate.
 - Retention keeps current and previous releases.
 
-## Controlled incidents
-
-For each scenario (stale source, schedule mismatch, and dbt quality failure), verify:
-
-1. Safe synthetic trigger
-2. Visible health degradation
-3. Diagnostic evidence
-4. Relevant cited runbook
-5. Correct approved demo control or an unresolved/escalated outcome
-6. Audit record in SQLite
-7. Separate post-action health check
-8. No mutation of healthy collected data
-
-## Dashboard
+## Stage 4 static product
 
 Browser QA verifies:
 
-- Four intended pages and labels
+- Two intended pages and labels: Transit Reliability and System Documentation
 - No traceback or broken navigation
-- Required Control Room health fields
-- Filters and metric definitions
+- Existing Stage 3 metrics and nearby definitions
+- Mode/route/day aggregate views only
 - Clear distinction between prediction observations and actual arrivals
 - Prominent low-coverage qualifications
 - No causal language
-- Read-only assistant boundary
+- No stop-level, event-level, trip-level, raw, or private operational data
+- No operational controls or private-release requests
 
-## RAG evaluation
+The Stage 4 product does not implement the Control Room, Incident Detail,
+synthetic recovery controls, or a continuously updating dashboard. Those remain
+deferred until separately approved.
+
+## Bounded read-only RAG evaluation
 
 The evaluation set contains known questions, expected source documents/sections, and prohibited claims.
 
@@ -86,8 +78,17 @@ Required checks:
 - Unsupported questions produce explicit insufficiency rather than invention.
 - The assistant never claims it ran, retried, fixed, acknowledged, or verified an incident.
 - Secrets and excluded operational content never enter the index or generation context.
-- Current incident metadata is sanitized and supplied per request rather than embedded as permanent knowledge.
+- The first corpus contains approved documentation, metric definitions, limitations, and cited runbook guidance only.
+- The first RAG experience is local or CLI/demo-bound; it is not public interactive browser functionality.
+- Current incident metadata is not required for Stage 4.
 - Embedding model, corpus, metadata, and index remain below 1 GB.
+
+## Cloudflare feasibility evaluation
+
+- Use synthetic artifacts only during the feasibility check.
+- Measure artifact size, expected request shape, response latency, limits, failure behavior, and rollback/unpublish steps.
+- Do not upload the private archive or require a Cloudflare deployment for Stage 4 acceptance.
+- Pages/R2/Workers adoption remains optional and reversible.
 
 ## Resource evaluation
 

@@ -2,15 +2,15 @@
 
 ## Status
 
-Stage 3 remediation integration is complete on top of `origin/main` (`2aa0d90`).
+Stage 3 remediation integration is complete and merged to `main` at `926e674`.
 The three remediation snapshots were integrated without starting Stage 4:
 
 - Airflow demo: isolated synthetic DAG execution and committed fixtures.
 - Contract: static `stop_times.txt` schedule mapping populates `scheduled_event_utc` for realtime events.
 - Release: path/symlink validation, bounded dbt execution output and timeout, read-only candidate reopen, transactional static activation, and reader-aware retention.
 
-Production collection remains cron-only. No production collector, cron installation,
-Airflow service, commit, or push was run.
+Production collection remains cron-only and is stopped. No production collector,
+cron installation, or Airflow service was run for this stage.
 
 ## Remediation evidence
 

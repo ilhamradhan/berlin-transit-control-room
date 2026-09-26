@@ -1,0 +1,58 @@
+{
+  "aggregates": [
+    {
+      "median_delay_seconds": 60.0,
+      "mode": "tram",
+      "observation_count": 2,
+      "on_time_rate": 0.5,
+      "p90_delay_seconds": 1086.0,
+      "route_id": "M1",
+      "schedule_match_rate": 1.0,
+      "service_date": "2026-09-01",
+      "severe_delay_rate": 0.5
+    },
+    {
+      "median_delay_seconds": 300.0,
+      "mode": "subway",
+      "observation_count": 1,
+      "on_time_rate": 1.0,
+      "p90_delay_seconds": 300.0,
+      "route_id": "U2",
+      "schedule_match_rate": 1.0,
+      "service_date": "2026-09-02",
+      "severe_delay_rate": 0.0
+    }
+  ],
+  "generated_at": "2026-09-03T12:00:00Z",
+  "metric_definitions": {
+    "cancellation_rate": "Source-provided cancellation rate; unavailable in this release when no cancellation field exists.",
+    "median_delay_seconds": "Median predicted delay in seconds.",
+    "on_time_rate": "Share of observations at most five minutes late.",
+    "p90_delay_seconds": "90th percentile predicted delay in seconds.",
+    "realtime_coverage_rate": "Share of expected collection slots represented by the verified release.",
+    "schedule_match_rate": "Share of observations with a validated static schedule match.",
+    "severe_delay_rate": "Share of observations more than fifteen minutes late."
+  },
+  "provenance": {
+    "campaign_days": 7,
+    "coverage_status": "complete",
+    "data_origin": "accepted_finite_campaign",
+    "realtime_coverage_rate": 1.0,
+    "source": "VBB GTFS-Realtime"
+  },
+  "release_id": "fixture-release",
+  "schema_version": "1",
+  "summary": {
+    "cancellation_rate": null,
+    "covered_slot_count": 2,
+    "entity_count": 3,
+    "median_delay_seconds": 300.0,
+    "observation_count": 3,
+    "on_time_rate": 0.6666667,
+    "p90_delay_seconds": 1020.0,
+    "realtime_coverage_rate": 1.0,
+    "schedule_match_rate": 1.0,
+    "severe_delay_rate": 0.3333333,
+    "slot_count": 2
+  }
+}

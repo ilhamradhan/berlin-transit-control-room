@@ -1,0 +1,16 @@
+[
+  {
+    "question": "How is a verified release published?",
+    "expected_source": "ARCHITECTURE.md",
+    "expected_section": "Versioned publication"
+  },
+  {
+    "question": "Does the dashboard show actual arrivals?",
+    "expected_source": "EVALUATION.md",
+    "expected_section": "Stage 4 static product"
+  },
+  {
+    "question": "What is the weather impact on delays?",
+    "expected_status": "insufficient"
+  }
+]
