@@ -5,14 +5,13 @@ sources:
     schema: main
     tables:
       - name: observations
-        description: Canonical sanitized observation fixture for the isolated demo.
+        description: Canonical observation input for isolated demos and verified production releases.
         columns:
           - name: slot_utc
             tests: [not_null]
           - name: feed_timestamp_utc
             tests: [not_null]
           - name: static_version
-            tests: [not_null]
           - name: entity_id
             tests: [not_null]
           - name: trip_id

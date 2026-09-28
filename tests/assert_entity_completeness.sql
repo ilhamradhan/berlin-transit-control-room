@@ -5,5 +5,5 @@ where entity_id is null
    or route_id is null
    or stop_id is null
    or slot_utc is null
-   or scheduled_event_utc is null
    or predicted_event_utc is null
+   or (data_origin = 'synthetic' and scheduled_event_utc is null)

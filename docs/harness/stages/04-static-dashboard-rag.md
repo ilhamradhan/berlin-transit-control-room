@@ -189,3 +189,52 @@ exit: 0
 The Stage 4 red-line is complete and reconciled in Kanban task `t_4511ff90`. No
 external provider or Cloudflare account was contacted; provider integration is
 explicitly deferred beyond this red-line stage.
+
+## Real campaign rebuild checkpoint — local only
+
+The recovered private archive was relocated to the canonical ignored runtime
+root and processed without recollection. A seven-day read-only DuckDB release
+was built from the real Parquet archive for `2026-09-10` through `2026-09-17`.
+The public artifact and static site were rebuilt locally from that release.
+
+```text
+campaign window: 2026-09-10T00:00:00Z .. 2026-09-17T00:00:00Z
+expected slots: 672
+successful slots: 629
+realtime coverage: 93.60119047619048%
+filtered observations: 15,438,902
+mode/route/day aggregates: 582
+median source delay: 60 seconds
+P90 source delay: 60 seconds
+on-time rate: 98.16112570699652%
+severe-delay rate: 0.5509070528461156%
+schedule-relationship match: 99.76379149242608%
+cancellation rate: unavailable
+```
+
+The source archive contains no scheduled event timestamps, so the release uses
+the source `delay_seconds` field and does not reconstruct scheduled-versus-
+predicted delay. Rows without a mode or delay value are excluded from the
+public aggregates. This checkpoint remains local and uncommitted; raw data,
+private releases, and runtime state remain outside Git.
+
+Verification:
+
+```text
+$ dbt parse && dbt run
+PASS=3 WARN=0 ERROR=0 SKIP=0 NO-OP=0 REUSED=0 TOTAL=3
+
+$ dbt test --select stg_observations int_reliability_observations mart_reliability
+PASS=37 WARN=0 ERROR=0 SKIP=0 NO-OP=0 REUSED=0 TOTAL=37
+
+$ read-only DuckDB reopen + exporter
+exported real-campaign-20260910-20260917 with 93.6% coverage and 582 aggregates
+
+$ browser QA
+real release rendered; navigation and metrics passed; console errors: 0
+```
+
+The real release remains a local, uncommitted build artifact. No recurring
+collector, public deployment, or raw-data publication was added; automating
+future real-release builds is a separate follow-up and is not required for this
+static product checkpoint.
