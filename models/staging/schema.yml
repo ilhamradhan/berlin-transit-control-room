@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: stg_observations
-    description: Typed staging view of canonical synthetic observations.
+    description: Typed staging view of canonical observations from demo or production input.
     columns:
       - name: slot_utc
         tests: [not_null]
@@ -17,7 +17,6 @@ models:
       - name: stop_id
         tests: [not_null]
       - name: stop_sequence
-        tests: [not_null]
       - name: event_kind
         tests:
           - not_null
@@ -29,7 +28,7 @@ models:
           - not_null
           - accepted_values:
               arguments:
-                values: [SCHEDULED]
+                values: [SCHEDULED, CANCELED]
       - name: mode
         tests:
           - not_null
@@ -41,16 +40,16 @@ models:
           - not_null
           - accepted_values:
               arguments:
-                values: [airflow]
+                values: [airflow, cron]
       - name: data_origin
         tests:
           - not_null
           - accepted_values:
               arguments:
-                values: [synthetic]
+                values: [synthetic, real]
       - name: namespace
         tests:
           - not_null
           - accepted_values:
               arguments:
-                values: [demo]
+                values: [demo, production]

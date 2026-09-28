@@ -15,7 +15,7 @@ models:
           - not_null
           - accepted_values:
               arguments:
-                values: [SCHEDULED]
+                values: [SCHEDULED, CANCELED]
       - name: is_on_time
         tests: [not_null]
       - name: is_severe_delay
